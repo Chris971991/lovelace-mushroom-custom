@@ -99,9 +99,8 @@ export class ClimateCard
   @state() private _graphHeight: number = 80; // Default to 80 pixels
   @state() private _graphLineColor: string = "rgba(255,255,255,0.5)"; // Default line color
   @state() private _graphFillColor: string = "rgba(255,255,255,0.2)"; // Default fill color
-  @state() private _graphSmoothingWindow: number = 8; // Default smoothing window
-  @state() private _graphSamplingPoints: number = 30; // Default sampling points
-  @state() private _graphCurveTension: number = 0.1; // Default curve tension
+  @state() private _graphCurveTension: number = 0.3; // Default curve tension
+  
   @state() private _graphData: number[] = [];
   @state() private _graphMin: number = 0;
   @state() private _graphMax: number = 0;
@@ -157,9 +156,8 @@ export class ClimateCard
     this._graphHeight = config.graph_height || 80; // Default to 80 pixels
     this._graphLineColor = config.graph_line_color || "rgba(255,255,255,0.5)"; // Default line color
     this._graphFillColor = config.graph_fill_color || "rgba(255,255,255,0.2)"; // Default fill color
-    this._graphSmoothingWindow = config.graph_smoothing_window || 8; // Default smoothing window
-    this._graphSamplingPoints = config.graph_sampling_points || 30; // Default sampling points
-    this._graphCurveTension = config.graph_curve_tension || 0.1; // Default curve tension
+    this._graphCurveTension = config.graph_curve_tension || 0.3; // Default curve tension
+    
     
     this.updateActiveControl();
   }
@@ -172,12 +170,14 @@ export class ClimateCard
     }
   }
   
-  // Helper function to smooth data using a weighted moving average
-  private smoothData(data: number[], windowSize: number = 5): number[] {
+  // Helper function to smooth data using a weighted moving average with enhanced smoothing
+  private smoothData(data: number[], windowSize: number = 9): number[] {
     if (data.length <= windowSize) return data;
     
     const result: number[] = [];
     
+    // First pass: Apply weighted moving average
+    const firstPass: number[] = [];
     for (let i = 0; i < data.length; i++) {
       let sum = 0;
       let weightSum = 0;
@@ -188,14 +188,29 @@ export class ClimateCard
            j <= Math.min(data.length - 1, i + Math.floor(windowSize / 2));
            j++) {
         // Calculate weight based on distance from current point
+        // Using Gaussian-like weighting for smoother results
         const distance = Math.abs(i - j);
-        const weight = 1 / (distance + 1); // Higher weight for closer points
+        const weight = Math.exp(-(distance * distance) / (windowSize / 2));
         
         sum += data[j] * weight;
         weightSum += weight;
       }
       
-      result.push(sum / weightSum);
+      firstPass.push(sum / weightSum);
+    }
+    
+    // Second pass: Apply additional smoothing to reduce any remaining noise
+    for (let i = 0; i < firstPass.length; i++) {
+      let sum = 0;
+      let count = 0;
+      
+      // Simple moving average for second pass
+      for (let j = Math.max(0, i - 2); j <= Math.min(firstPass.length - 1, i + 2); j++) {
+        sum += firstPass[j];
+        count++;
+      }
+      
+      result.push(sum / count);
     }
     
     return result;
@@ -236,11 +251,11 @@ export class ClimateCard
           
           console.log(`Temperature range: ${rawMin} to ${rawMax}, using ${min} to ${max} for graph`);
           
-          // Smooth the data with a larger window for smoother curves
-          const smoothedData = this.smoothData(rawData, 10);
+          // Always apply some basic smoothing to remove noise
+          const smoothedData = this.smoothData(rawData, 9);
           
-          // Reduce the number of points for smoother rendering
-          const sampledData = this.sampleData(smoothedData, 10); // Fewer points for smoother curves
+          // Sample the data to a reasonable number of points
+          const sampledData = this.sampleData(smoothedData, 50);
           
           this._graphData = sampledData;
           this._graphMin = min;
@@ -499,7 +514,7 @@ export class ClimateCard
           `)}
         </div>
       `;
-}
+  }
 
   private _setFanMode(mode: string): void {
     this.hass!.callService("climate", "set_fan_mode", {
@@ -534,28 +549,6 @@ export class ClimateCard
     });
   }
 
-  protected renderActionBadge(entity: ClimateEntity) {
-    const hvac_action = entity.attributes.hvac_action;
-    if (!hvac_action || hvac_action == "off") return nothing;
-
-    const color = getHvacActionColor(hvac_action);
-    const icon = getHvacActionIcon(hvac_action);
-
-    if (!icon) return nothing;
-
-    return html`
-      <div class="action-badge">
-        <ha-icon
-          .icon=${icon}
-          style=${styleMap({
-            "--icon-color": `rgb(${color})`
-          })}
-        ></ha-icon>
-        <span>${hvac_action}</span>
-      </div>
-    `;
-  }
-  
   private generateGraphPath(includeBottom: boolean = false): string {
     if (this._graphData.length === 0) return "";
     
@@ -572,34 +565,35 @@ export class ClimateCard
       return { x, y };
     });
     
-    // Create SVG path with smooth curves
+    // Create path based on graph style
     let path = `M${points[0].x},${points[0].y}`;
     
-    // Use a natural cubic spline approach for smoother curves
+    // Use a more advanced natural cubic spline approach for smoother curves
     for (let i = 0; i < points.length - 1; i++) {
       // Get current and next points
       const current = points[i];
       const next = points[i + 1];
       
       // Calculate control points for a smooth curve
-      // This is a simplified natural cubic spline approach
       const xDiff = next.x - current.x;
       
-      // Calculate control points
       // Use the configured tension factor
       const tension = this._graphCurveTension;
       
       // Get previous and next points for calculating tangents
-      const prev = i > 0 ? points[i - 1] : { x: current.x - xDiff, y: current.y };
-      const nextNext = i < points.length - 2 ? points[i + 2] : { x: next.x + xDiff, y: next.y };
+      // Use more points for better curve estimation when available
+      const prev1 = i > 0 ? points[i - 1] : { x: current.x - xDiff, y: current.y };
+      const prev2 = i > 1 ? points[i - 2] : prev1;
+      const nextNext1 = i < points.length - 2 ? points[i + 2] : { x: next.x + xDiff, y: next.y };
+      const nextNext2 = i < points.length - 3 ? points[i + 3] : nextNext1;
       
-      // Calculate tangent vectors
-      const tangentX1 = (next.x - prev.x) * tension;
-      const tangentY1 = (next.y - prev.y) * tension;
-      const tangentX2 = (nextNext.x - current.x) * tension;
-      const tangentY2 = (nextNext.y - current.y) * tension;
+      // Calculate weighted tangent vectors using multiple points for better curve estimation
+      const tangentX1 = ((next.x - prev1.x) * 0.7 + (next.x - prev2.x) * 0.3) * tension;
+      const tangentY1 = ((next.y - prev1.y) * 0.7 + (next.y - prev2.y) * 0.3) * tension;
+      const tangentX2 = ((nextNext1.x - current.x) * 0.7 + (nextNext2.x - current.x) * 0.3) * tension;
+      const tangentY2 = ((nextNext1.y - current.y) * 0.7 + (nextNext2.y - current.y) * 0.3) * tension;
       
-      // Calculate control points
+      // Calculate control points with improved positioning for smoother transitions
       const controlX1 = current.x + tangentX1 / 3;
       const controlY1 = current.y + tangentY1 / 3;
       const controlX2 = next.x - tangentX2 / 3;
