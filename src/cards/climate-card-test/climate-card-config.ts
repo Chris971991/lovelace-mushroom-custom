@@ -1,4 +1,4 @@
-import { array, assign, boolean, object, optional, string } from "superstruct";
+import { array, assign, boolean, number, object, optional, string } from "superstruct";
 import { HvacMode, LovelaceCardConfig } from "../../ha";
 import {
   ActionsSharedConfig,
@@ -35,6 +35,7 @@ export type ClimateCardConfig = LovelaceCardConfig &
     inside_temperature_entity?: string;
     show_fan_control?: boolean;
     graph_entity?: string;
+    graph_hours?: number;
   };
 
 export const climateCardConfigStruct = assign(
@@ -52,5 +53,6 @@ export const climateCardConfigStruct = assign(
     inside_temperature_entity: optional(string()),
     show_fan_control: optional(boolean()),
     graph_entity: optional(string()),
+    graph_hours: optional(number()),
   })
 );

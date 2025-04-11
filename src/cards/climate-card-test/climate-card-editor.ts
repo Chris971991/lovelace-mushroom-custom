@@ -17,12 +17,13 @@ import {
 import { CLIMATE_CARD_EDITOR_NAME, CLIMATE_ENTITY_DOMAINS } from "./const";
 
 const CLIMATE_LABELS = [
-  "hvac_modes", 
-  "show_temperature_control", 
-  "outside_temperature_entity", 
+  "hvac_modes",
+  "show_temperature_control",
+  "outside_temperature_entity",
   "inside_temperature_entity",
   "show_fan_control",
-  "graph_entity"
+  "graph_entity",
+  "graph_hours"
 ] as const;
 
 @customElement(CLIMATE_CARD_EDITOR_NAME)
@@ -60,6 +61,9 @@ export class ClimateCardEditor
     if (schema.name === "graph_entity") {
       return "Temperature Graph Sensor";
     }
+    if (schema.name === "graph_hours") {
+      return "Graph History (hours)";
+    }
     return this.hass!.localize(
       `ui.panel.lovelace.editor.card.generic.${schema.name}`
     );
@@ -96,6 +100,7 @@ export class ClimateCardEditor
       { name: "inside_temperature_entity", selector: { entity: { domain: ["sensor"] } } },
       { name: "outside_temperature_entity", selector: { entity: { domain: ["sensor"] } } },
       { name: "graph_entity", selector: { entity: { domain: ["sensor"] } } },
+      { name: "graph_hours", selector: { number: { min: 1, max: 168, mode: "slider", step: 1 } } },
       ...computeActionsFormSchema(),
     ];
 

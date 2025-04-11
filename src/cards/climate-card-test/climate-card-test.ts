@@ -95,6 +95,7 @@ export class ClimateCard
   @state() private _outsideTempEntity?: string;
   @state() private _insideTempEntity?: string;
   @state() private _graphEntity?: string;
+  @state() private _graphHours: number = 24; // Default to 24 hours
   @state() private _graphData: number[] = [];
   @state() private _graphMin: number = 0;
   @state() private _graphMax: number = 0;
@@ -142,11 +143,12 @@ export class ClimateCard
       },
       ...config,
     });
-    
     // Check for temperature sensor entities in the config
     this._outsideTempEntity = config.outside_temperature_entity || "";
     this._insideTempEntity = config.inside_temperature_entity || "";
     this._graphEntity = config.graph_entity || "";
+    this._graphHours = config.graph_hours || 24; // Default to 24 hours
+    
     
     this.updateActiveControl();
   }
@@ -191,13 +193,13 @@ export class ClimateCard
     if (!entity) return;
     
     try {
-      // Fetch history data for the last 24 hours
+      // Fetch history data for the specified number of hours
       const now = new Date();
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
+      const startTime = new Date();
+      startTime.setHours(startTime.getHours() - this._graphHours);
       
       // Use Home Assistant history API
-      const history = await this.hass.callApi<any[][]>("GET", `history/period/${yesterday.toISOString()}?filter_entity_id=${this._graphEntity}&end_time=${now.toISOString()}&minimal_response`);
+      const history = await this.hass.callApi<any[][]>("GET", `history/period/${startTime.toISOString()}?filter_entity_id=${this._graphEntity}&end_time=${now.toISOString()}&minimal_response`);
       
       if (history && history.length > 0 && history[0].length > 0) {
         // Extract state values and convert to numbers
