@@ -167,7 +167,7 @@ export class ClimateCard
     }
   }
   
-  // Helper function to smooth data using a moving average
+  // Helper function to smooth data using a weighted moving average
   private smoothData(data: number[], windowSize: number = 5): number[] {
     if (data.length <= windowSize) return data;
     
@@ -175,17 +175,22 @@ export class ClimateCard
     
     for (let i = 0; i < data.length; i++) {
       let sum = 0;
-      let count = 0;
+      let weightSum = 0;
       
-      // Calculate average of surrounding points
+      // Calculate weighted average of surrounding points
+      // Points closer to the current point have higher weights
       for (let j = Math.max(0, i - Math.floor(windowSize / 2));
            j <= Math.min(data.length - 1, i + Math.floor(windowSize / 2));
            j++) {
-        sum += data[j];
-        count++;
+        // Calculate weight based on distance from current point
+        const distance = Math.abs(i - j);
+        const weight = 1 / (distance + 1); // Higher weight for closer points
+        
+        sum += data[j] * weight;
+        weightSum += weight;
       }
       
-      result.push(sum / count);
+      result.push(sum / weightSum);
     }
     
     return result;
@@ -214,15 +219,23 @@ export class ClimateCard
           .filter(value => !isNaN(value));
         
         if (rawData.length > 0) {
+          // Calculate min and max from raw data
+          const rawMin = Math.min(...rawData);
+          const rawMax = Math.max(...rawData);
+          
+          // Add a significant buffer to min/max to ensure data doesn't touch edges
+          // Use a larger buffer for better visualization
+          const buffer = Math.max(1, (rawMax - rawMin) * 0.2);
+          const min = Math.floor(rawMin - buffer);
+          const max = Math.ceil(rawMax + buffer);
+          
+          console.log(`Temperature range: ${rawMin} to ${rawMax}, using ${min} to ${max} for graph`);
+          
           // Smooth the data
           const smoothedData = this.smoothData(rawData, 5);
           
           // Reduce the number of points for smoother rendering
-          const sampledData = this.sampleData(smoothedData, 20);
-          
-          // Calculate min and max for scaling
-          const min = Math.min(...sampledData);
-          const max = Math.max(...sampledData);
+          const sampledData = this.sampleData(smoothedData, 50); // Use more points for better detail
           
           this._graphData = sampledData;
           this._graphMin = min;
@@ -368,6 +381,7 @@ export class ClimateCard
                   <defs>
                     <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
                       <stop offset="0%" stop-color="${this._graphFillColor}" />
+                      <stop offset="50%" stop-color="${this._graphFillColor.replace(/[^,]+(?=\))/, '0.3')}" />
                       <stop offset="100%" stop-color="rgba(255,255,255,0)" />
                     </linearGradient>
                   </defs>
@@ -550,23 +564,42 @@ export class ClimateCard
     const points = this._graphData.map((value, index) => {
       const x = (index / (dataPoints - 1)) * width;
       // Invert Y axis (SVG Y increases downward)
-      const y = height - ((value - this._graphMin) / range) * height * 0.8 + height * 0.1;
+      const y = height - ((value - this._graphMin) / range) * height * 0.95 + height * 0.025;
       return { x, y };
     });
     
     // Create SVG path with smooth curves
     let path = `M${points[0].x},${points[0].y}`;
     
-    // Use cubic bezier curves for smooth lines
+    // Use a natural cubic spline approach for smoother curves
     for (let i = 0; i < points.length - 1; i++) {
+      // Get current and next points
       const current = points[i];
       const next = points[i + 1];
       
-      // Calculate control points for smooth curve
-      const controlX1 = current.x + (next.x - current.x) / 3;
-      const controlY1 = current.y;
-      const controlX2 = next.x - (next.x - current.x) / 3;
-      const controlY2 = next.y;
+      // Calculate control points for a smooth curve
+      // This is a simplified natural cubic spline approach
+      const xDiff = next.x - current.x;
+      
+      // Calculate control points
+      // For a smoother curve, we use a tension factor
+      const tension = 0.15; // Lower values make smoother curves
+      
+      // Get previous and next points for calculating tangents
+      const prev = i > 0 ? points[i - 1] : { x: current.x - xDiff, y: current.y };
+      const nextNext = i < points.length - 2 ? points[i + 2] : { x: next.x + xDiff, y: next.y };
+      
+      // Calculate tangent vectors
+      const tangentX1 = (next.x - prev.x) * tension;
+      const tangentY1 = (next.y - prev.y) * tension;
+      const tangentX2 = (nextNext.x - current.x) * tension;
+      const tangentY2 = (nextNext.y - current.y) * tension;
+      
+      // Calculate control points
+      const controlX1 = current.x + tangentX1 / 3;
+      const controlY1 = current.y + tangentY1 / 3;
+      const controlX2 = next.x - tangentX2 / 3;
+      const controlY2 = next.y - tangentY2 / 3;
       
       path += ` C${controlX1},${controlY1} ${controlX2},${controlY2} ${next.x},${next.y}`;
     }
