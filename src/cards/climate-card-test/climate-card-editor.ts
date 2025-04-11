@@ -26,7 +26,10 @@ const CLIMATE_LABELS = [
   "graph_hours",
   "graph_height",
   "graph_line_color",
-  "graph_fill_color"
+  "graph_fill_color",
+  "graph_smoothing_window",
+  "graph_sampling_points",
+  "graph_curve_tension"
 ] as const;
 
 @customElement(CLIMATE_CARD_EDITOR_NAME)
@@ -76,6 +79,16 @@ export class ClimateCardEditor
     if (schema.name === "graph_fill_color") {
       return "Graph Fill Color";
     }
+    if (schema.name === "graph_smoothing_window") {
+      return "Graph Smoothing Window";
+    }
+    if (schema.name === "graph_sampling_points") {
+      return "Graph Sampling Points";
+    }
+    if (schema.name === "graph_curve_tension") {
+      return "Graph Curve Tension";
+    }
+    // These are already handled above
     return this.hass!.localize(
       `ui.panel.lovelace.editor.card.generic.${schema.name}`
     );
@@ -116,6 +129,9 @@ export class ClimateCardEditor
       { name: "graph_height", selector: { number: { min: 40, max: 100, mode: "slider", step: 10 } } },
       { name: "graph_line_color", selector: { text: { type: "color" } } },
       { name: "graph_fill_color", selector: { text: { type: "color" } } },
+      { name: "graph_smoothing_window", selector: { number: { min: 1, max: 20, mode: "slider", step: 1 } } },
+      { name: "graph_sampling_points", selector: { number: { min: 10, max: 100, mode: "slider", step: 5 } } },
+      { name: "graph_curve_tension", selector: { number: { min: 0.05, max: 0.5, mode: "slider", step: 0.05 } } },
       ...computeActionsFormSchema(),
     ];
 

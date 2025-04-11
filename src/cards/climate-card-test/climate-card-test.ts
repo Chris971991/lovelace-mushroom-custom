@@ -99,6 +99,9 @@ export class ClimateCard
   @state() private _graphHeight: number = 80; // Default to 80 pixels
   @state() private _graphLineColor: string = "rgba(255,255,255,0.5)"; // Default line color
   @state() private _graphFillColor: string = "rgba(255,255,255,0.2)"; // Default fill color
+  @state() private _graphSmoothingWindow: number = 8; // Default smoothing window
+  @state() private _graphSamplingPoints: number = 30; // Default sampling points
+  @state() private _graphCurveTension: number = 0.1; // Default curve tension
   @state() private _graphData: number[] = [];
   @state() private _graphMin: number = 0;
   @state() private _graphMax: number = 0;
@@ -154,7 +157,9 @@ export class ClimateCard
     this._graphHeight = config.graph_height || 80; // Default to 80 pixels
     this._graphLineColor = config.graph_line_color || "rgba(255,255,255,0.5)"; // Default line color
     this._graphFillColor = config.graph_fill_color || "rgba(255,255,255,0.2)"; // Default fill color
-    
+    this._graphSmoothingWindow = config.graph_smoothing_window || 8; // Default smoothing window
+    this._graphSamplingPoints = config.graph_sampling_points || 30; // Default sampling points
+    this._graphCurveTension = config.graph_curve_tension || 0.1; // Default curve tension
     
     this.updateActiveControl();
   }
@@ -231,11 +236,11 @@ export class ClimateCard
           
           console.log(`Temperature range: ${rawMin} to ${rawMax}, using ${min} to ${max} for graph`);
           
-          // Smooth the data
-          const smoothedData = this.smoothData(rawData, 5);
+          // Smooth the data with a larger window for smoother curves
+          const smoothedData = this.smoothData(rawData, 10);
           
           // Reduce the number of points for smoother rendering
-          const sampledData = this.sampleData(smoothedData, 50); // Use more points for better detail
+          const sampledData = this.sampleData(smoothedData, 10); // Fewer points for smoother curves
           
           this._graphData = sampledData;
           this._graphMin = min;
@@ -581,8 +586,8 @@ export class ClimateCard
       const xDiff = next.x - current.x;
       
       // Calculate control points
-      // For a smoother curve, we use a tension factor
-      const tension = 0.15; // Lower values make smoother curves
+      // Use the configured tension factor
+      const tension = this._graphCurveTension;
       
       // Get previous and next points for calculating tangents
       const prev = i > 0 ? points[i - 1] : { x: current.x - xDiff, y: current.y };
