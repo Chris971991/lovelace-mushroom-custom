@@ -28,6 +28,7 @@ const CLIMATE_LABELS = [
   "graph_height",
   "graph_line_color",
   "graph_fill_color",
+  "graph_alpha",
   "graph_curve_tension",
   "graph_line_width",
   "graph_style"
@@ -86,6 +87,7 @@ export class ClimateCardEditor
     // Graph Appearance - use Unicode symbols for color selectors
     if (schema.name === "graph_line_color") return "Line Color";
     if (schema.name === "graph_fill_color") return "Fill Color";
+    if (schema.name === "graph_alpha") return "Graph Transparency";
     if (schema.name === "graph_line_width") return "Line Thickness (0 = no line)";
     if (schema.name === "graph_curve_tension") return "Curve Smoothness";
     if (schema.name === "graph_style") return "Graph Style";
@@ -156,6 +158,7 @@ export class ClimateCardEditor
       { type: "constant", name: "spacer2", value: " " },
       // Color selectors without headers
       { name: "graph_fill_color", selector: { text: { type: "color" } } },
+      { name: "graph_alpha", selector: { number: { min: 0, max: 1, mode: "slider", step: 0.05 } } },
       { name: "graph_line_width", selector: { number: { min: 0, max: 10, mode: "slider", step: 1 } } },
       { name: "graph_curve_tension", selector: { number: { min: 0.1, max: 1, mode: "slider", step: 0.05 } } },
       {

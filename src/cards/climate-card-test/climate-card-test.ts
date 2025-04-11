@@ -100,6 +100,7 @@ export class ClimateCard
   @state() private _graphHeight: number = 80; // Default to 80 pixels
   @state() private _graphLineColor: string = "rgba(255,255,255,0.5)"; // Default line color
   @state() private _graphFillColor: string = "rgba(255,255,255,0.2)"; // Default fill color
+  @state() private _graphAlpha: number = 0.5; // Default alpha value
   @state() private _graphCurveTension: number = 0.3; // Default curve tension
   @state() private _graphLineWidth: number = 2; // Default line width of 2
   
@@ -159,6 +160,14 @@ export class ClimateCard
     this._graphHeight = config.graph_height || 80; // Default to 80 pixels
     this._graphLineColor = config.graph_line_color || "rgba(255,255,255,0.5)"; // Default line color
     this._graphFillColor = config.graph_fill_color || "rgba(255,255,255,0.2)"; // Default fill color
+    
+    // Handle alpha value (transparency)
+    if (config.graph_alpha !== undefined) {
+      this._graphAlpha = config.graph_alpha;
+    } else {
+      this._graphAlpha = 0.5; // Default alpha value
+    }
+    
     this._graphCurveTension = config.graph_curve_tension || 0.3; // Default curve tension
     
     // Handle line width explicitly to ensure 0 is a valid value
@@ -384,8 +393,8 @@ export class ClimateCard
             <svg viewBox="0 0 500 ${this._graphHeight}" preserveAspectRatio="none" class="temperature-graph">
               <defs>
                 <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stop-color="${this._graphFillColor}" />
-                  <stop offset="50%" stop-color="${this._graphFillColor.replace(/[^,]+(?=\))/, '0.3')}" />
+                  <stop offset="0%" stop-color="${this.getColorWithAlpha(this._graphFillColor, this._graphAlpha)}" />
+                  <stop offset="50%" stop-color="${this.getColorWithAlpha(this._graphFillColor, this._graphAlpha * 0.6)}" />
                   <stop offset="100%" stop-color="rgba(255,255,255,0)" />
                 </linearGradient>
               </defs>
@@ -398,7 +407,7 @@ export class ClimateCard
                 <path
                   d="${this.generateGraphPath()}"
                   fill="none"
-                  stroke="${this._graphLineColor}"
+                  stroke="${this.getColorWithAlpha(this._graphLineColor, this._graphAlpha)}"
                   stroke-width="${this._graphLineWidth > 0 ? this._graphLineWidth : 0}"
                   stroke-linejoin="round"
                   stroke-linecap="round"
@@ -636,6 +645,46 @@ export class ClimateCard
     }
     
     return path;
+  }
+  
+  /**
+   * Helper method to apply alpha value to a color
+   * Handles both hex colors and rgba colors
+   */
+  private getColorWithAlpha(color: string, alpha: number): string {
+    // If color is already in rgba format
+    if (color.startsWith('rgba')) {
+      // Replace the existing alpha value
+      return color.replace(/rgba\(([^,]+),([^,]+),([^,]+),[^)]+\)/, `rgba($1,$2,$3,${alpha})`);
+    }
+    
+    // If color is in rgb format
+    if (color.startsWith('rgb')) {
+      // Convert to rgba
+      return color.replace(/rgb\(([^)]+)\)/, `rgba($1,${alpha})`);
+    }
+    
+    // If color is in hex format (#RRGGBB or #RGB)
+    if (color.startsWith('#')) {
+      let r, g, b;
+      
+      // Handle shorthand hex (#RGB)
+      if (color.length === 4) {
+        r = parseInt(color[1] + color[1], 16);
+        g = parseInt(color[2] + color[2], 16);
+        b = parseInt(color[3] + color[3], 16);
+      } else {
+        // Handle full hex (#RRGGBB)
+        r = parseInt(color.substring(1, 3), 16);
+        g = parseInt(color.substring(3, 5), 16);
+        b = parseInt(color.substring(5, 7), 16);
+      }
+      
+      return `rgba(${r},${g},${b},${alpha})`;
+    }
+    
+    // For named colors or other formats, return with default alpha
+    return `rgba(255,255,255,${alpha})`;
   }
 
   static get styles(): CSSResultGroup {

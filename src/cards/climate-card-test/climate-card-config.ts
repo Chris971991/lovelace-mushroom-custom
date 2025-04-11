@@ -40,6 +40,7 @@ export type ClimateCardConfig = LovelaceCardConfig &
     graph_height?: number;
     graph_line_color?: string;
     graph_fill_color?: string;
+    graph_alpha?: number;
     graph_curve_tension?: number;
     graph_line_width?: number;
     graph_style?: "smooth" | "sharp";
@@ -65,6 +66,7 @@ export const climateCardConfigStruct = assign(
     graph_height: optional(number()),
     graph_line_color: optional(string()),
     graph_fill_color: optional(string()),
+    graph_alpha: optional(number()),
     graph_curve_tension: optional(number()),
     graph_line_width: optional(number()),
     graph_style: optional(string()),
