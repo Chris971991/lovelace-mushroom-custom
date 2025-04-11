@@ -56,43 +56,46 @@ export class ClimateCardEditor
     if (GENERIC_LABELS.includes(schema.name as any)) {
       return customLocalize(`editor.card.generic.${schema.name}`);
     }
+    
+    // Special handling for section headers - return empty string to avoid duplication
+    if (schema.type === "constant") {
+      return "";
+    }
+    
+    // User-friendly labels for all fields
+    if (schema.name === "entity") return "Climate Entity";
+    if (schema.name === "name") return "Card Name";
+    if (schema.name === "icon") return "Icon";
+    
+    // Controls
+    if (schema.name === "show_temperature_control") return "Show Temperature Controls";
+    if (schema.name === "collapsible_controls") return "Collapsible Controls";
+    if (schema.name === "show_fan_control") return "Show Fan Controls";
+    if (schema.name === "hvac_modes") return "Available HVAC Modes";
+    
+    // Temperature Sensors
+    if (schema.name === "inside_temperature_entity") return "Indoor Temperature Sensor";
+    if (schema.name === "outside_temperature_entity") return "Outdoor Temperature Sensor";
+    
+    // Graph Settings
+    if (schema.name === "show_graph") return "Show Temperature Graph";
+    if (schema.name === "graph_entity") return "Graph Data Source";
+    if (schema.name === "graph_hours") return "History Period (hours)";
+    if (schema.name === "graph_height") return "Graph Height";
+    
+    // Graph Appearance - use Unicode symbols for color selectors
+    if (schema.name === "graph_line_color") return "Line Color";
+    if (schema.name === "graph_fill_color") return "Fill Color";
+    if (schema.name === "graph_line_width") return "Line Thickness (0 = no line)";
+    if (schema.name === "graph_curve_tension") return "Curve Smoothness";
+    if (schema.name === "graph_style") return "Graph Style";
+    
+    // Default to climate labels
     if (CLIMATE_LABELS.includes(schema.name as any)) {
       return customLocalize(`editor.card.climate.${schema.name}`);
     }
-    if (schema.name === "inside_temperature_entity") {
-      return "Inside Temperature Sensor";
-    }
-    if (schema.name === "outside_temperature_entity") {
-      return "Outside Temperature Sensor";
-    }
-    if (schema.name === "graph_entity") {
-      return "Temperature Graph Sensor";
-    }
-    if (schema.name === "show_graph") {
-      return "Show Temperature Graph";
-    }
-    if (schema.name === "graph_hours") {
-      return "Graph History (hours)";
-    }
-    if (schema.name === "graph_height") {
-      return "Graph Height (pixels)";
-    }
-    if (schema.name === "graph_line_color") {
-      return "Graph Line Color";
-    }
-    if (schema.name === "graph_fill_color") {
-      return "Graph Fill Color";
-    }
-    if (schema.name === "graph_curve_tension") {
-      return "Graph Smoothness (higher = smoother)";
-    }
-    if (schema.name === "graph_line_width") {
-      return "Graph Line Thickness (0 = no line)";
-    }
-    if (schema.name === "graph_style") {
-      return "Graph Style";
-    }
-    // These are already handled above
+    
+    // Fallback to HA localization
     return this.hass!.localize(
       `ui.panel.lovelace.editor.card.generic.${schema.name}`
     );
@@ -104,14 +107,17 @@ export class ClimateCardEditor
     }
 
     const schema: HaFormSchema[] = [
+      // Basic card configuration
       { name: "entity", selector: { entity: { domain: CLIMATE_ENTITY_DOMAINS } } },
       { name: "name", selector: { text: {} } },
       { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } },
       ...APPEARANCE_FORM_SCHEMA,
+      
+      // Section divider for Controls
+      { type: "constant", name: "controls_header", value: "⚙️  Controls" },
       { name: "show_temperature_control", selector: { boolean: {} } },
       { name: "collapsible_controls", selector: { boolean: {} } },
       { name: "show_fan_control", selector: { boolean: {} } },
-      { name: "show_graph", selector: { boolean: {} } },
       {
         name: "hvac_modes",
         selector: {
@@ -127,15 +133,31 @@ export class ClimateCardEditor
           },
         },
       },
+      
+      // Section divider for Temperature Sensors
+      { type: "constant", name: "sensors_header", value: "🌡️  Temperature Sensors" },
       { name: "inside_temperature_entity", selector: { entity: { domain: ["sensor"] } } },
       { name: "outside_temperature_entity", selector: { entity: { domain: ["sensor"] } } },
+      
+      // Section divider for Graph Settings
+      { type: "constant", name: "graph_header", value: "📊  Temperature Graph" },
+      { name: "show_graph", selector: { boolean: {} } },
       { name: "graph_entity", selector: { entity: { domain: ["sensor"] } } },
       { name: "graph_hours", selector: { number: { min: 1, max: 168, mode: "slider", step: 1 } } },
       { name: "graph_height", selector: { number: { min: 40, max: 100, mode: "slider", step: 10 } } },
+      
+      // Graph Appearance
+      { type: "constant", name: "graph_appearance_header", value: "🎨  Graph Appearance" },
+      // Add a spacer to create some visual separation
+      { type: "constant", name: "spacer1", value: " " },
+      // Color selectors without headers
       { name: "graph_line_color", selector: { text: { type: "color" } } },
+      // Add a spacer to create some visual separation
+      { type: "constant", name: "spacer2", value: " " },
+      // Color selectors without headers
       { name: "graph_fill_color", selector: { text: { type: "color" } } },
-      { name: "graph_curve_tension", selector: { number: { min: 0.1, max: 1, mode: "slider", step: 0.05 } } },
       { name: "graph_line_width", selector: { number: { min: 0, max: 10, mode: "slider", step: 1 } } },
+      { name: "graph_curve_tension", selector: { number: { min: 0.1, max: 1, mode: "slider", step: 0.05 } } },
       {
         name: "graph_style",
         selector: {
@@ -148,6 +170,9 @@ export class ClimateCardEditor
           }
         }
       },
+      
+      // Actions
+      { type: "constant", name: "actions_header", value: "🖱️  Actions" },
       ...computeActionsFormSchema(),
     ];
 
