@@ -514,10 +514,10 @@ export class ClimateCard
           font-size: 0.8em;
         }
 
-        .fan-button:first-child {
-          border-top-left-radius: 50%;
-          border-bottom-left-radius: 50%;
-        }
+      .fan-button:first-child {
+        border-top-left-radius: 50%;
+        border-bottom-left-radius: 50%;
+      }
         
         .fan-button.active {
           background: linear-gradient(180deg, rgba(161, 233, 255, 1) 0%, rgba(196, 236, 255, 1) 100%);
