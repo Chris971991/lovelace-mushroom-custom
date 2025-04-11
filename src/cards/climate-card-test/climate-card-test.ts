@@ -213,7 +213,8 @@ export class ClimateCard
     return html`
       <ha-card class=${classMap({ "fill-container": appearance.fill_container })}>
         <div class="climate-card-container">
-          <div class="climate-card-header">
+          <div class="card-layout">
+            <!-- Left column: Temperature display -->
             <div class="temperature-display">
               ${outsideTemp !== null ? html`
                 <div class="outside-temp">Outside: ${outsideTemp.toFixed(1)}°</div>
@@ -223,18 +224,23 @@ export class ClimateCard
               ` : nothing}
               <div class="climate-name">${name}</div>
             </div>
-            <div class="climate-controls">
-              ${this.renderHvacModeControls(stateObj)}
+            
+            <div class="controls-wrapper">
+              <!-- Center column: HVAC and Fan controls -->
+              <div class="control-buttons">
+                <div class="hvac-mode-row">
+                  ${this.renderHvacModeControls(stateObj)}
+                </div>
+                <div class="fan-mode-row">
+                  ${this.renderFanControls(stateObj)}
+                </div>
+              </div>
+              
+              <!-- Right column: Temperature controls -->
+              <div class="temperature-controls">
+                ${this.renderTempControls(stateObj)}
+              </div>
             </div>
-          </div>
-          
-          <!-- Add explicit temperature control row -->
-          <div class="temperature-row">
-            ${this.renderTempControls(stateObj)}
-          </div>
-          
-          <div class="climate-card-content">
-            ${this.renderFanControls(stateObj)}
           </div>
           
           <div class="climate-card-footer">
@@ -248,15 +254,15 @@ export class ClimateCard
                       <stop offset="100%" stop-color="rgba(255,255,255,0)" />
                     </linearGradient>
                   </defs>
-                  <path 
-                    d="M0,25 C100,15 200,35 300,25 C400,15 500,30 500,25" 
-                    fill="none" 
-                    stroke="rgba(255,255,255,0.5)" 
+                  <path
+                    d="M0,25 C100,15 200,35 300,25 C400,15 500,30 500,25"
+                    fill="none"
+                    stroke="rgba(255,255,255,0.5)"
                     stroke-width="2"
                   />
-                  <path 
-                    d="M0,25 C100,15 200,35 300,25 C400,15 500,30 500,25 L500,50 L0,50 Z" 
-                    fill="url(#gradient)" 
+                  <path
+                    d="M0,25 C100,15 200,35 300,25 C400,15 500,30 500,25 L500,50 L0,50 Z"
+                    fill="url(#gradient)"
                   />
                 </svg>
               </div>
@@ -420,7 +426,6 @@ export class ClimateCard
       css`
         ha-card {
           color: white;
-          padding: 16px;
           overflow: hidden;
           position: relative;
         }
@@ -431,10 +436,17 @@ export class ClimateCard
           height: 100%;
         }
         
-        .climate-card-header {
+        .card-layout {
           display: flex;
           justify-content: space-between;
-          padding-bottom: 8px;
+          align-items: center;
+          padding: 0 8px;
+        }
+        
+        .controls-wrapper {
+          display: flex;
+          align-items: center;
+          gap: 0;
         }
         
         .temperature-display {
@@ -459,29 +471,48 @@ export class ClimateCard
           opacity: 0.8;
         }
         
-        .climate-card-content {
+        .control-buttons {
           display: flex;
-          justify-content: space-between;
-          margin-top: 8px;
+          flex-direction: column;
+          align-items: flex-end;
+          margin-left: auto;
+          margin-right: 0;
+        }
+        
+        .temperature-controls {
+          margin-left: -10px; /* Negative margin to ensure touching */
+        }
+        
+        .hvac-mode-row, .fan-mode-row {
+          display: flex;
+          justify-content: flex-end;
+          margin-right: -4px; /* Negative margin to move buttons to the right */
+        }
+        
+        .temperature-controls-row {
+          display: flex;
+          justify-content: center;
+          margin-top: 16px;
+          display: none; /* Hide for now as per the image */
         }
         
         .hvac-mode-controls {
           display: flex;
-          flex-wrap: wrap;
+          flex-wrap: nowrap;
           gap: 0px;
         }
         
         .mode-button {
           background: #444;
           border: none;
-          border-radius: none;
-          width: 32px;
-          height: 32px;
+          width: 28px;
+          height: 28px;
           display: flex;
           align-items: center;
           justify-content: center;
           cursor: pointer;
           color: white;
+          font-size: 0.9em;
         }
 
         .mode-button:first-child {
@@ -496,16 +527,15 @@ export class ClimateCard
         
         .fan-mode-controls {
           display: flex;
-          flex-wrap: wrap;
+          flex-wrap: nowrap;
           gap: 0px;
         }
         
         .fan-button {
           background: #444;
           border: none;
-          border-radius: none;
-          width: 32px;
-          height: 32px;
+          width: 28px;
+          height: 28px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -524,41 +554,11 @@ export class ClimateCard
           color: black;
         }
         
-        .temp-controls {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
+        .temperature-column {
+          margin-left: 16px;
         }
         
-        .temp-up, .temp-down {
-          background: #444;
-          border: none;
-          width: 40px;
-          height: 32px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          color: white;
-        }
-        
-        .temp-up {
-          border-radius: 16px 16px 0 0;
-        }
-        
-        .temp-down {
-          border-radius: 0 0 16px 16px;
-        }
-        
-        .current-temp {
-          background: #444;
-          width: 40px;
-          height: 32px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 1em;
-        }
+        /* Temperature controls are now handled by the component */
         
         .action-badge {
           display: flex;
