@@ -440,7 +440,7 @@ export class ClimateCard
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding: 0 8px;
+          padding: 0 8px 0 16px; /* Increase left padding to shift everything right */
         }
         
         .controls-wrapper {
@@ -453,6 +453,7 @@ export class ClimateCard
           display: flex;
           flex-direction: column;
           align-items: flex-start;
+          margin-left: 8px; /* Add margin to shift right */
         }
         
         .inside-temp {
