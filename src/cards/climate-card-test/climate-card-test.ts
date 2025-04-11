@@ -165,6 +165,13 @@ export class ClimateCard
   }
 
   private _handleAction(ev: ActionHandlerEvent) {
+    // Prevent action if the click was on a control
+    if ((ev as any).target &&
+        ((ev as any).target.closest('.control-buttons') ||
+         (ev as any).target.closest('.temperature-controls'))) {
+      return;
+    }
+    
     handleAction(this, this.hass!, this._config!, ev.detail.action!);
   }
 
@@ -211,7 +218,15 @@ export class ClimateCard
     const rtl = computeRTL(this.hass);
   
     return html`
-      <ha-card class=${classMap({ "fill-container": appearance.fill_container })}>
+      <ha-card
+        class=${classMap({ "fill-container": appearance.fill_container })}
+        @action=${this._handleAction}
+        .actionHandler=${actionHandler({
+          hasHold: hasAction(this._config.hold_action),
+          hasDoubleClick: hasAction(this._config.double_tap_action),
+        })}
+        tabindex="0"
+      >
         <div class="climate-card-container">
           <div class="card-layout">
             <div class="content-wrapper">
@@ -456,6 +471,7 @@ export class ClimateCard
           box-sizing: border-box;
           position: relative;
           z-index: 1; /* Above the footer */
+          cursor: pointer; /* Indicate clickable */
         }
         
         .content-wrapper {
