@@ -100,6 +100,7 @@ export class ClimateCard
   @state() private _graphLineColor: string = "rgba(255,255,255,0.5)"; // Default line color
   @state() private _graphFillColor: string = "rgba(255,255,255,0.2)"; // Default fill color
   @state() private _graphCurveTension: number = 0.3; // Default curve tension
+  @state() private _graphLineWidth: number = 2; // Default line width of 2
   
   @state() private _graphData: number[] = [];
   @state() private _graphMin: number = 0;
@@ -158,8 +159,18 @@ export class ClimateCard
     this._graphFillColor = config.graph_fill_color || "rgba(255,255,255,0.2)"; // Default fill color
     this._graphCurveTension = config.graph_curve_tension || 0.3; // Default curve tension
     
+    // Handle line width explicitly to ensure 0 is a valid value
+    if (config.graph_line_width === 0) {
+      this._graphLineWidth = 0;
+    } else {
+      this._graphLineWidth = Number(config.graph_line_width || 2); // Default line width of 2
+    }
+    
     
     this.updateActiveControl();
+    
+    // Debug log to check the line width value
+    console.log("Graph line width set to:", this._graphLineWidth);
   }
 
   protected updated(changedProperties: PropertyValues) {
@@ -381,14 +392,20 @@ export class ClimateCard
                 <rect x="0" y="0" width="500" height="${this._graphHeight}" rx="12" ry="12" />
               </clipPath>
               <g clip-path="url(#rounded-corners)">
+                <!-- Line path (only shown when line width > 0) -->
                 <path
                   d="${this.generateGraphPath()}"
                   fill="none"
                   stroke="${this._graphLineColor}"
-                  stroke-width="2"
+                  stroke-width="${this._graphLineWidth > 0 ? this._graphLineWidth : 0}"
                   stroke-linejoin="round"
                   stroke-linecap="round"
+                  style=${styleMap({
+                    display: this._graphLineWidth <= 0 ? 'none' : 'block',
+                    opacity: this._graphLineWidth <= 0 ? '0' : '1'
+                  })}
                 />
+                <!-- Fill path (always shown) -->
                 <path
                   d="${this.generateGraphPath(true)}"
                   fill="url(#gradient)"

@@ -28,6 +28,7 @@ const CLIMATE_LABELS = [
   "graph_line_color",
   "graph_fill_color",
   "graph_curve_tension",
+  "graph_line_width",
   "graph_style"
 ] as const;
 
@@ -81,6 +82,9 @@ export class ClimateCardEditor
     if (schema.name === "graph_curve_tension") {
       return "Graph Smoothness (higher = smoother)";
     }
+    if (schema.name === "graph_line_width") {
+      return "Graph Line Thickness (0 = no line)";
+    }
     if (schema.name === "graph_style") {
       return "Graph Style";
     }
@@ -126,6 +130,7 @@ export class ClimateCardEditor
       { name: "graph_line_color", selector: { text: { type: "color" } } },
       { name: "graph_fill_color", selector: { text: { type: "color" } } },
       { name: "graph_curve_tension", selector: { number: { min: 0.1, max: 1, mode: "slider", step: 0.05 } } },
+      { name: "graph_line_width", selector: { number: { min: 0, max: 10, mode: "slider", step: 1 } } },
       {
         name: "graph_style",
         selector: {
