@@ -522,12 +522,15 @@ export class ClimateCard
       }
     }
     
+    // For the "off" mode, use white icon color for better contrast
+    const iconColor = (isActive && mode === 'off') ? "white" : "black";
+    
     return html`
       <button
         class="mode-button ${isActive ? 'active' : ''}"
         @click=${() => this._setHvacMode(mode)}
         style=${isActive ? styleMap({
-          "--icon-color": "black",
+          "--icon-color": iconColor,
           "--button-bg": gradient,
           "--icon-animation": iconAnimation
         }) : ''}
