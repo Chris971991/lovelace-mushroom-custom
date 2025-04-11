@@ -360,6 +360,7 @@ export class ClimateCard
         tabindex="0"
         style=${styleMap({
           "--graph-height": `${this._graphHeight}px`,
+          "--card-border-radius": "12px",
           "position": "relative",
           "overflow": "visible"
         })}
@@ -375,18 +376,24 @@ export class ClimateCard
                   <stop offset="100%" stop-color="rgba(255,255,255,0)" />
                 </linearGradient>
               </defs>
-              <path
-                d="${this.generateGraphPath()}"
-                fill="none"
-                stroke="${this._graphLineColor}"
-                stroke-width="2"
-                stroke-linejoin="round"
-                stroke-linecap="round"
-              />
-              <path
-                d="${this.generateGraphPath(true)}"
-                fill="url(#gradient)"
-              />
+              <!-- Add clip path for rounded corners -->
+              <clipPath id="rounded-corners">
+                <rect x="0" y="0" width="500" height="${this._graphHeight}" rx="12" ry="12" />
+              </clipPath>
+              <g clip-path="url(#rounded-corners)">
+                <path
+                  d="${this.generateGraphPath()}"
+                  fill="none"
+                  stroke="${this._graphLineColor}"
+                  stroke-width="2"
+                  stroke-linejoin="round"
+                  stroke-linecap="round"
+                />
+                <path
+                  d="${this.generateGraphPath(true)}"
+                  fill="url(#gradient)"
+                />
+              </g>
             </svg>
           </div>
         ` : nothing}
@@ -623,6 +630,7 @@ export class ClimateCard
           overflow: hidden;
           position: relative;
           min-height: 100px; /* Fixed minimum height */
+          border-radius: var(--card-border-radius, 12px);
           display: flex;
           justify-content: center;
           align-items: center; /* Center vertically */
@@ -817,6 +825,12 @@ export class ClimateCard
           z-index: -1; /* Place behind all content */
           overflow: visible; /* Allow content to overflow */
           pointer-events: none; /* Allow clicks to pass through */
+          border-radius: 0 0 12px 12px; /* Match card's bottom corners */
+        }
+        
+        /* Apply border radius to the SVG as well */
+        .graph-background-container svg {
+          border-radius: 0 0 12px 12px; /* Match card's bottom corners */
         }
         
         /* Add a subtle gradient at the bottom */
