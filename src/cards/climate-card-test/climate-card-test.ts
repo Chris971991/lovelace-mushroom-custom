@@ -374,7 +374,6 @@ export class ClimateCard
           </div>
           
           <div class="climate-card-footer">
-            ${this.renderActionBadge(stateObj)}
             ${this._graphEntity && this._graphData.length > 0 ? html`
               <div class="climate-graph">
                 <svg viewBox="0 0 500 ${this._graphHeight}" preserveAspectRatio="none" class="temperature-graph">
