@@ -616,10 +616,10 @@ export class ClimateCard
         
         .climate-card-footer {
           position: absolute;
-          bottom: 0;
+          bottom: -16px; /* Extend beyond bottom padding */
           left: -16px; /* Extend beyond padding */
           right: -16px; /* Extend beyond padding */
-          height: 50px; /* Taller footer */
+          height: 66px; /* Taller footer to account for bottom extension */
           z-index: 0; /* Put behind other elements */
         }
         
@@ -629,7 +629,7 @@ export class ClimateCard
           bottom: 0;
           left: 0;
           right: 0;
-          height: 20px;
+          height: 30px; /* Taller gradient */
           background: linear-gradient(to top, rgba(255,255,255,0.05), transparent);
           border-radius: 0 0 12px 12px;
           width: 100%;
@@ -637,10 +637,10 @@ export class ClimateCard
 
         .climate-graph {
           position: absolute;
-          bottom: 0;
+          bottom: -16px; /* Extend beyond bottom padding */
           left: 0;
           right: 0;
-          height: 50px; /* Taller graph */
+          height: 66px; /* Taller graph to account for bottom extension */
           overflow: hidden;
           width: calc(100% + 32px); /* Extend beyond padding */
           margin-left: -16px; /* Align with left edge */
