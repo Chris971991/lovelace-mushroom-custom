@@ -214,31 +214,33 @@ export class ClimateCard
       <ha-card class=${classMap({ "fill-container": appearance.fill_container })}>
         <div class="climate-card-container">
           <div class="card-layout">
-            <!-- Left column: Temperature display -->
-            <div class="temperature-display">
-              ${outsideTemp !== null ? html`
-                <div class="outside-temp">Outside: ${outsideTemp.toFixed(1)}°</div>
-              ` : nothing}
-              ${insideTemp !== null ? html`
-                <div class="inside-temp">${insideTemp.toFixed(1)}°</div>
-              ` : nothing}
-              <div class="climate-name">${name}</div>
-            </div>
-            
-            <div class="controls-wrapper">
-              <!-- Center column: HVAC and Fan controls -->
-              <div class="control-buttons">
-                <div class="hvac-mode-row">
-                  ${this.renderHvacModeControls(stateObj)}
-                </div>
-                <div class="fan-mode-row">
-                  ${this.renderFanControls(stateObj)}
-                </div>
+            <div class="content-wrapper">
+              <!-- Left column: Temperature display -->
+              <div class="temperature-display">
+                ${outsideTemp !== null ? html`
+                  <div class="outside-temp">Outside: ${outsideTemp.toFixed(1)}°</div>
+                ` : nothing}
+                ${insideTemp !== null ? html`
+                  <div class="inside-temp">${insideTemp.toFixed(1)}°</div>
+                ` : nothing}
+                <div class="climate-name">${name}</div>
               </div>
               
-              <!-- Right column: Temperature controls -->
-              <div class="temperature-controls">
-                ${this.renderTempControls(stateObj)}
+              <div class="controls-wrapper">
+                <!-- Center column: HVAC and Fan controls -->
+                <div class="control-buttons">
+                  <div class="hvac-mode-row">
+                    ${this.renderHvacModeControls(stateObj)}
+                  </div>
+                  <div class="fan-mode-row">
+                    ${this.renderFanControls(stateObj)}
+                  </div>
+                </div>
+                
+                <!-- Right column: Temperature controls -->
+                <div class="temperature-controls">
+                  ${this.renderTempControls(stateObj)}
+                </div>
               </div>
             </div>
           </div>
@@ -429,7 +431,9 @@ export class ClimateCard
           padding: 16px;
           overflow: hidden;
           position: relative;
-          min-height: 120px; /* Ensure enough height for the card */
+          min-height: 120px;
+          display: flex;
+          justify-content: center;
         }
         
         .climate-card-container {
@@ -440,10 +444,17 @@ export class ClimateCard
         
         .card-layout {
           display: flex;
-          justify-content: center; /* Center horizontally */
+          justify-content: center;
           align-items: center;
-          margin-top: 16px; /* Shift everything down */
+          margin-top: 16px;
           width: 100%;
+        }
+        
+        .content-wrapper {
+          display: flex;
+          align-items: center;
+          max-width: 100%;
+          overflow: hidden;
         }
         
         .controls-wrapper {
@@ -457,8 +468,9 @@ export class ClimateCard
           display: flex;
           flex-direction: column;
           align-items: flex-start;
-          margin-right: 16px; /* Space between temp display and controls */
-          flex: 0 0 auto; /* Don't grow or shrink */
+          margin-right: 16px;
+          flex: 0 0 auto;
+          min-width: 80px; /* Ensure minimum width */
         }
         
         .inside-temp {
