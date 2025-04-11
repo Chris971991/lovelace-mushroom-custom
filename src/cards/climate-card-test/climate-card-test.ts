@@ -96,6 +96,7 @@ export class ClimateCard
   @state() private _insideTempEntity?: string;
   @state() private _graphEntity?: string;
   @state() private _graphHours: number = 24; // Default to 24 hours
+  @state() private _graphHeight: number = 80; // Default to 80 pixels
   @state() private _graphData: number[] = [];
   @state() private _graphMin: number = 0;
   @state() private _graphMax: number = 0;
@@ -148,6 +149,7 @@ export class ClimateCard
     this._insideTempEntity = config.inside_temperature_entity || "";
     this._graphEntity = config.graph_entity || "";
     this._graphHours = config.graph_hours || 24; // Default to 24 hours
+    this._graphHeight = config.graph_height || 80; // Default to 80 pixels
     
     
     this.updateActiveControl();
@@ -319,6 +321,7 @@ export class ClimateCard
           hasDoubleClick: hasAction(this._config.double_tap_action),
         })}
         tabindex="0"
+        style=${styleMap({ "--graph-height": `${this._graphHeight}px` })}
       >
         <div class="climate-card-container">
           <div class="card-layout">
@@ -357,7 +360,7 @@ export class ClimateCard
             ${this.renderActionBadge(stateObj)}
             ${this._graphEntity && this._graphData.length > 0 ? html`
               <div class="climate-graph">
-                <svg viewBox="0 0 500 50" preserveAspectRatio="none" class="temperature-graph">
+                <svg viewBox="0 0 500 ${this._graphHeight}" preserveAspectRatio="none" class="temperature-graph">
                   <defs>
                     <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
                       <stop offset="0%" stop-color="rgba(255,255,255,0.2)" />
@@ -535,7 +538,7 @@ export class ClimateCard
     if (this._graphData.length === 0) return "";
     
     const width = 500;
-    const height = 50;
+    const height = this._graphHeight;
     const dataPoints = this._graphData.length;
     const range = this._graphMax - this._graphMin || 1; // Avoid division by zero
     
@@ -582,7 +585,7 @@ export class ClimateCard
           padding: 16px;
           overflow: hidden;
           position: relative;
-          min-height: 140px; /* Taller card */
+          min-height: calc(min(var(--graph-height, 80px), 100px) + 100px); /* Dynamic height based on graph height, limited to 100px */
           display: flex;
           justify-content: center;
           align-items: center; /* Center vertically */
@@ -771,8 +774,10 @@ export class ClimateCard
           bottom: -16px; /* Extend beyond bottom padding */
           left: -16px; /* Extend beyond padding */
           right: -16px; /* Extend beyond padding */
-          height: 66px; /* Taller footer to account for bottom extension */
+          height: var(--graph-height, 80px); /* Dynamic height based on config */
           z-index: 0; /* Put behind other elements */
+          overflow: hidden; /* Hide overflow */
+          max-height: 100px; /* Limit height */
         }
         
         .climate-card-footer::before {
@@ -792,9 +797,10 @@ export class ClimateCard
           bottom: -16px; /* Extend beyond bottom padding */
           left: 0;
           right: 0;
-          height: 66px; /* Taller graph to account for bottom extension */
+          height: var(--graph-height, 80px); /* Dynamic height based on config */
           overflow: hidden;
           width: calc(100% + 32px); /* Extend beyond padding */
+          max-height: 100px; /* Limit height */
           margin-left: -16px; /* Align with left edge */
         }
 
