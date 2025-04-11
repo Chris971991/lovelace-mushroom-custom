@@ -95,6 +95,9 @@ export class ClimateCard
   @state() private _outsideTempEntity?: string;
   @state() private _insideTempEntity?: string;
   @state() private _graphEntity?: string;
+  @state() private _graphData: number[] = [];
+  @state() private _graphMin: number = 0;
+  @state() private _graphMax: number = 0;
 
   private get _controls(): ClimateCardControl[] {
     if (!this._config || !this._stateObj) return [];
@@ -152,7 +155,95 @@ export class ClimateCard
     super.updated(changedProperties);
     if (this.hass && changedProperties.has("hass")) {
       this.updateActiveControl();
+      this.updateGraphData();
     }
+  }
+  
+  // Helper function to smooth data using a moving average
+  private smoothData(data: number[], windowSize: number = 5): number[] {
+    if (data.length <= windowSize) return data;
+    
+    const result: number[] = [];
+    
+    for (let i = 0; i < data.length; i++) {
+      let sum = 0;
+      let count = 0;
+      
+      // Calculate average of surrounding points
+      for (let j = Math.max(0, i - Math.floor(windowSize / 2));
+           j <= Math.min(data.length - 1, i + Math.floor(windowSize / 2));
+           j++) {
+        sum += data[j];
+        count++;
+      }
+      
+      result.push(sum / count);
+    }
+    
+    return result;
+  }
+  
+  private async updateGraphData() {
+    if (!this.hass || !this._graphEntity) return;
+    
+    // Check if entity exists
+    const entity = this.hass.states[this._graphEntity];
+    if (!entity) return;
+    
+    try {
+      // Fetch history data for the last 24 hours
+      const now = new Date();
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      
+      // Use Home Assistant history API
+      const history = await this.hass.callApi<any[][]>("GET", `history/period/${yesterday.toISOString()}?filter_entity_id=${this._graphEntity}&end_time=${now.toISOString()}&minimal_response`);
+      
+      if (history && history.length > 0 && history[0].length > 0) {
+        // Extract state values and convert to numbers
+        const rawData = history[0]
+          .map(item => parseFloat(item.state))
+          .filter(value => !isNaN(value));
+        
+        if (rawData.length > 0) {
+          // Smooth the data
+          const smoothedData = this.smoothData(rawData, 5);
+          
+          // Reduce the number of points for smoother rendering
+          const sampledData = this.sampleData(smoothedData, 20);
+          
+          // Calculate min and max for scaling
+          const min = Math.min(...sampledData);
+          const max = Math.max(...sampledData);
+          
+          this._graphData = sampledData;
+          this._graphMin = min;
+          this._graphMax = max;
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching history data:", error);
+    }
+  }
+  
+  // Helper function to sample data to reduce number of points
+  private sampleData(data: number[], targetPoints: number): number[] {
+    if (data.length <= targetPoints) return data;
+    
+    const result: number[] = [];
+    const step = data.length / targetPoints;
+    
+    for (let i = 0; i < targetPoints; i++) {
+      const index = Math.floor(i * step);
+      result.push(data[index]);
+    }
+    
+    // Always include the last point
+    if (result.length > 0 && result[result.length - 1] !== data[data.length - 1]) {
+      result.push(data[data.length - 1]);
+    }
+    
+    return result;
   }
 
   updateActiveControl() {
@@ -262,7 +353,7 @@ export class ClimateCard
           
           <div class="climate-card-footer">
             ${this.renderActionBadge(stateObj)}
-            ${this._graphEntity ? html`
+            ${this._graphEntity && this._graphData.length > 0 ? html`
               <div class="climate-graph">
                 <svg viewBox="0 0 500 50" preserveAspectRatio="none" class="temperature-graph">
                   <defs>
@@ -272,13 +363,15 @@ export class ClimateCard
                     </linearGradient>
                   </defs>
                   <path
-                    d="M0,25 C100,15 200,35 300,25 C400,15 500,30 500,25"
+                    d="${this.generateGraphPath()}"
                     fill="none"
                     stroke="rgba(255,255,255,0.5)"
                     stroke-width="2"
+                    stroke-linejoin="round"
+                    stroke-linecap="round"
                   />
                   <path
-                    d="M0,25 C100,15 200,35 300,25 C400,15 500,30 500,25 L500,50 L0,50 Z"
+                    d="${this.generateGraphPath(true)}"
                     fill="url(#gradient)"
                   />
                 </svg>
@@ -434,6 +527,47 @@ export class ClimateCard
         <span>${hvac_action}</span>
       </div>
     `;
+  }
+  
+  private generateGraphPath(includeBottom: boolean = false): string {
+    if (this._graphData.length === 0) return "";
+    
+    const width = 500;
+    const height = 50;
+    const dataPoints = this._graphData.length;
+    const range = this._graphMax - this._graphMin || 1; // Avoid division by zero
+    
+    // Scale data points to fit the SVG viewBox
+    const points = this._graphData.map((value, index) => {
+      const x = (index / (dataPoints - 1)) * width;
+      // Invert Y axis (SVG Y increases downward)
+      const y = height - ((value - this._graphMin) / range) * height * 0.8 + height * 0.1;
+      return { x, y };
+    });
+    
+    // Create SVG path with smooth curves
+    let path = `M${points[0].x},${points[0].y}`;
+    
+    // Use cubic bezier curves for smooth lines
+    for (let i = 0; i < points.length - 1; i++) {
+      const current = points[i];
+      const next = points[i + 1];
+      
+      // Calculate control points for smooth curve
+      const controlX1 = current.x + (next.x - current.x) / 3;
+      const controlY1 = current.y;
+      const controlX2 = next.x - (next.x - current.x) / 3;
+      const controlY2 = next.y;
+      
+      path += ` C${controlX1},${controlY1} ${controlX2},${controlY2} ${next.x},${next.y}`;
+    }
+    
+    // If includeBottom is true, add points to create a closed shape for filling
+    if (includeBottom) {
+      path += ` L${width},${height} L0,${height} Z`;
+    }
+    
+    return path;
   }
 
   static get styles(): CSSResultGroup {
