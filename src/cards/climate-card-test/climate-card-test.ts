@@ -97,6 +97,8 @@ export class ClimateCard
   @state() private _graphEntity?: string;
   @state() private _graphHours: number = 24; // Default to 24 hours
   @state() private _graphHeight: number = 80; // Default to 80 pixels
+  @state() private _graphLineColor: string = "rgba(255,255,255,0.5)"; // Default line color
+  @state() private _graphFillColor: string = "rgba(255,255,255,0.2)"; // Default fill color
   @state() private _graphData: number[] = [];
   @state() private _graphMin: number = 0;
   @state() private _graphMax: number = 0;
@@ -150,6 +152,8 @@ export class ClimateCard
     this._graphEntity = config.graph_entity || "";
     this._graphHours = config.graph_hours || 24; // Default to 24 hours
     this._graphHeight = config.graph_height || 80; // Default to 80 pixels
+    this._graphLineColor = config.graph_line_color || "rgba(255,255,255,0.5)"; // Default line color
+    this._graphFillColor = config.graph_fill_color || "rgba(255,255,255,0.2)"; // Default fill color
     
     
     this.updateActiveControl();
@@ -363,14 +367,14 @@ export class ClimateCard
                 <svg viewBox="0 0 500 ${this._graphHeight}" preserveAspectRatio="none" class="temperature-graph">
                   <defs>
                     <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                      <stop offset="0%" stop-color="rgba(255,255,255,0.2)" />
+                      <stop offset="0%" stop-color="${this._graphFillColor}" />
                       <stop offset="100%" stop-color="rgba(255,255,255,0)" />
                     </linearGradient>
                   </defs>
                   <path
                     d="${this.generateGraphPath()}"
                     fill="none"
-                    stroke="rgba(255,255,255,0.5)"
+                    stroke="${this._graphLineColor}"
                     stroke-width="2"
                     stroke-linejoin="round"
                     stroke-linecap="round"

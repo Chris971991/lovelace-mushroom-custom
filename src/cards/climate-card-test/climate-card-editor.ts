@@ -24,7 +24,9 @@ const CLIMATE_LABELS = [
   "show_fan_control",
   "graph_entity",
   "graph_hours",
-  "graph_height"
+  "graph_height",
+  "graph_line_color",
+  "graph_fill_color"
 ] as const;
 
 @customElement(CLIMATE_CARD_EDITOR_NAME)
@@ -68,6 +70,12 @@ export class ClimateCardEditor
     if (schema.name === "graph_height") {
       return "Graph Height (pixels)";
     }
+    if (schema.name === "graph_line_color") {
+      return "Graph Line Color";
+    }
+    if (schema.name === "graph_fill_color") {
+      return "Graph Fill Color";
+    }
     return this.hass!.localize(
       `ui.panel.lovelace.editor.card.generic.${schema.name}`
     );
@@ -106,6 +114,8 @@ export class ClimateCardEditor
       { name: "graph_entity", selector: { entity: { domain: ["sensor"] } } },
       { name: "graph_hours", selector: { number: { min: 1, max: 168, mode: "slider", step: 1 } } },
       { name: "graph_height", selector: { number: { min: 40, max: 100, mode: "slider", step: 10 } } },
+      { name: "graph_line_color", selector: { text: { type: "color" } } },
+      { name: "graph_fill_color", selector: { text: { type: "color" } } },
       ...computeActionsFormSchema(),
     ];
 

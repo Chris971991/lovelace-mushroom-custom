@@ -37,6 +37,8 @@ export type ClimateCardConfig = LovelaceCardConfig &
     graph_entity?: string;
     graph_hours?: number;
     graph_height?: number;
+    graph_line_color?: string;
+    graph_fill_color?: string;
   };
 
 export const climateCardConfigStruct = assign(
@@ -56,5 +58,7 @@ export const climateCardConfigStruct = assign(
     graph_entity: optional(string()),
     graph_hours: optional(number()),
     graph_height: optional(number()),
+    graph_line_color: optional(string()),
+    graph_fill_color: optional(string()),
   })
 );
