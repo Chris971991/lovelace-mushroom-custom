@@ -481,32 +481,40 @@ export class ClimateCard
     const icon = getHvacModeIcon(mode);
     const color = getHvacModeColor(mode);
     
-    // Define gradient colors based on the mode
+    // Define gradient colors and animations based on the mode
     let gradient = '';
+    let iconAnimation = '';
     
     if (isActive) {
-      // Create mode-specific gradients
+      // Create mode-specific gradients and animations
       switch (mode) {
         case 'cool':
           gradient = 'linear-gradient(0deg, rgba(161,200,255,1) 0%, rgba(104,144,255,1) 100%)';
+          iconAnimation = 'cool 6s ease-in-out infinite';
           break;
         case 'heat':
           gradient = 'linear-gradient(0deg, rgba(255,161,161,1) 0%, rgba(255,104,104,1) 100%)';
+          iconAnimation = 'pulse 2s ease-in-out infinite';
           break;
         case 'auto':
           gradient = 'linear-gradient(0deg, rgba(161,255,161,1) 0%, rgba(104,204,104,1) 100%)';
+          iconAnimation = 'spin 4s linear infinite';
           break;
         case 'dry':
-          gradient = 'linear-gradient(0deg, rgba(189,161,255,1) 0% rgba(147,104,255,1) 100%)';
+          gradient = 'linear-gradient(0deg, rgba(189,161,255,1) 0%, rgba(147,104,255,1) 100%)';
+          iconAnimation = 'breathe 3s ease infinite';
           break;
         case 'fan_only':
           gradient = 'linear-gradient(0deg, rgba(161,233,255,1) 0%, rgba(104,196,227,1) 100%)';
+          iconAnimation = 'spin 2s linear infinite';
           break;
         case 'off':
           gradient = 'linear-gradient(0deg, rgba(150,150,150,0.8) 0%, rgba(180,180,180,0.6) 100%)';
+          // No animation for off mode
           break;
         case 'heat_cool':
           gradient = 'linear-gradient(0deg, rgba(161,255,161,1) 0%, rgba(104,204,104,1) 100%)';
+          iconAnimation = 'glow 2s ease-in-out infinite';
           break;
         default:
           // Fallback to a generic gradient using the mode color
@@ -520,7 +528,8 @@ export class ClimateCard
         @click=${() => this._setHvacMode(mode)}
         style=${isActive ? styleMap({
           "--icon-color": "black",
-          "--button-bg": gradient
+          "--button-bg": gradient,
+          "--icon-animation": iconAnimation
         }) : ''}
       >
         <ha-icon .icon=${icon}></ha-icon>
@@ -856,6 +865,10 @@ export class ClimateCard
         .mode-button ha-icon {
           --mdc-icon-size: 18px;
         }
+        
+        .mode-button.active ha-icon {
+          animation: var(--icon-animation, none);
+        }
 
         .mode-button:first-child {
           border-top-left-radius: 50%;
@@ -1013,6 +1026,14 @@ export class ClimateCard
       50% {
         opacity: 0.6;
       }
+    }
+    
+    /* Cool Animation - back and forth rotation with increasing angles */
+    @keyframes cool {
+      0%, 100% { transform: rotate(25deg); }
+      25% { transform: rotate(-25deg); }
+      50% { transform: rotate(50deg); }
+      75% { transform: rotate(-50deg); }
     }
         
         .fan-button.active ha-icon {
