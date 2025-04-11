@@ -426,8 +426,10 @@ export class ClimateCard
       css`
         ha-card {
           color: white;
+          padding: 16px;
           overflow: hidden;
           position: relative;
+          min-height: 120px; /* Ensure enough height for the card */
         }
         
         .climate-card-container {
@@ -438,22 +440,25 @@ export class ClimateCard
         
         .card-layout {
           display: flex;
-          justify-content: space-between;
+          justify-content: center; /* Center horizontally */
           align-items: center;
-          padding: 0 8px 0 16px; /* Increase left padding to shift everything right */
+          margin-top: 16px; /* Shift everything down */
+          width: 100%;
         }
         
         .controls-wrapper {
           display: flex;
           align-items: center;
           gap: 0;
+          flex: 0 0 auto; /* Don't grow or shrink */
         }
         
         .temperature-display {
           display: flex;
           flex-direction: column;
           align-items: flex-start;
-          margin-left: 8px; /* Add margin to shift right */
+          margin-right: 16px; /* Space between temp display and controls */
+          flex: 0 0 auto; /* Don't grow or shrink */
         }
         
         .inside-temp {
@@ -476,8 +481,7 @@ export class ClimateCard
           display: flex;
           flex-direction: column;
           align-items: flex-end;
-          margin-left: auto;
-          margin-right: 0;
+          flex: 0 0 auto; /* Don't grow or shrink */
         }
         
         .temperature-controls {
@@ -571,9 +575,12 @@ export class ClimateCard
         }
         
         .climate-card-footer {
-          margin-top: auto;
-          position: relative;
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
           height: 30px;
+          z-index: 0; /* Put behind other elements */
         }
         
         .climate-card-footer::before {
