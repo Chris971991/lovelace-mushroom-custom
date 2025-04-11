@@ -455,9 +455,10 @@ export class ClimateCard
         .content-wrapper {
           display: flex;
           align-items: center;
-          max-width: 100%;
+          width: 100%;
           overflow: visible;
           box-sizing: border-box;
+          position: relative;
         }
         
         .controls-wrapper {
@@ -476,6 +477,7 @@ export class ClimateCard
           margin-right: 16px;
           flex: 0 0 auto;
           min-width: 80px; /* Ensure minimum width */
+          z-index: 1;
         }
         
         .inside-temp {
@@ -499,11 +501,17 @@ export class ClimateCard
           flex-direction: column;
           align-items: flex-end;
           flex: 0 0 auto; /* Don't grow or shrink */
+          position: absolute;
+          right: 40px; /* Position from right */
+          z-index: 2;
         }
         
         .temperature-controls {
           margin: 0;
           padding: 0;
+          position: absolute;
+          right: 0;
+          z-index: 2;
         }
         
         .hvac-mode-row, .fan-mode-row {
@@ -528,14 +536,18 @@ export class ClimateCard
         .mode-button {
           background: #444;
           border: none;
-          width: 28px;
-          height: 28px;
+          width: 26px;
+          height: 26px;
           display: flex;
           align-items: center;
           justify-content: center;
           cursor: pointer;
           color: white;
-          font-size: 0.9em;
+          font-size: 0.8em;
+        }
+        
+        .mode-button ha-icon {
+          --mdc-icon-size: 18px;
         }
 
         .mode-button:first-child {
@@ -557,14 +569,18 @@ export class ClimateCard
         .fan-button {
           background: #444;
           border: none;
-          width: 28px;
-          height: 28px;
+          width: 26px;
+          height: 26px;
           display: flex;
           align-items: center;
           justify-content: center;
           cursor: pointer;
           color: white;
-          font-size: 0.8em;
+          font-size: 0.7em;
+        }
+        
+        .fan-button ha-icon {
+          --mdc-icon-size: 18px;
         }
 
         .fan-button:first-child {

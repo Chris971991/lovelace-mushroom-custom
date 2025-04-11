@@ -231,8 +231,8 @@ export class ClimateTemperatureControl extends LitElement {
       .temp-up, .temp-down {
         background: #444;
         border: none;
-        width: 40px;
-        height: 3rem;
+        width: 36px;
+        height: 2.5rem;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -260,12 +260,12 @@ export class ClimateTemperatureControl extends LitElement {
       
       .current-temp {
         background: #444;
-        width: 40px;
-        height: 32px;
+        width: 36px;
+        height: 28px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.2em;
+        font-size: 1.1em;
       }
       
       button[disabled] {
