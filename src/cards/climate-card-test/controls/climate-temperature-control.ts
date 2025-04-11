@@ -200,6 +200,8 @@ export class ClimateTemperatureControl extends LitElement {
       :host {
         display: flex;
         justify-content: center;
+        padding: 0;
+        margin: 0;
       }
       
       .temp-controls {
@@ -207,8 +209,8 @@ export class ClimateTemperatureControl extends LitElement {
         flex-direction: column;
         align-items: center;
         border-radius: 16px;
-        padding: 4px;
-        width: 60px;
+        padding: 0;
+        width: 40px;
       }
       
       .dual-temp-controls {

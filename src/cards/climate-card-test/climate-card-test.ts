@@ -434,6 +434,7 @@ export class ClimateCard
           min-height: 120px;
           display: flex;
           justify-content: center;
+          box-sizing: border-box;
         }
         
         .climate-card-container {
@@ -448,13 +449,15 @@ export class ClimateCard
           align-items: center;
           margin-top: 16px;
           width: 100%;
+          box-sizing: border-box;
         }
         
         .content-wrapper {
           display: flex;
           align-items: center;
           max-width: 100%;
-          overflow: hidden;
+          overflow: visible;
+          box-sizing: border-box;
         }
         
         .controls-wrapper {
@@ -462,6 +465,8 @@ export class ClimateCard
           align-items: center;
           gap: 0;
           flex: 0 0 auto; /* Don't grow or shrink */
+          margin: 0;
+          padding: 0;
         }
         
         .temperature-display {
@@ -497,7 +502,8 @@ export class ClimateCard
         }
         
         .temperature-controls {
-          margin-left: -10px; /* Negative margin to ensure touching */
+          margin: 0;
+          padding: 0;
         }
         
         .hvac-mode-row, .fan-mode-row {
