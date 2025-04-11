@@ -358,8 +358,38 @@ export class ClimateCard
           hasDoubleClick: hasAction(this._config.double_tap_action),
         })}
         tabindex="0"
-        style=${styleMap({ "--graph-height": `${this._graphHeight}px` })}
+        style=${styleMap({
+          "--graph-height": `${this._graphHeight}px`,
+          "position": "relative",
+          "overflow": "visible"
+        })}
       >
+        <!-- Dedicated graph container positioned behind all content -->
+        ${this._graphEntity && this._graphData.length > 0 ? html`
+          <div class="graph-background-container">
+            <svg viewBox="0 0 500 ${this._graphHeight}" preserveAspectRatio="none" class="temperature-graph">
+              <defs>
+                <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="${this._graphFillColor}" />
+                  <stop offset="50%" stop-color="${this._graphFillColor.replace(/[^,]+(?=\))/, '0.3')}" />
+                  <stop offset="100%" stop-color="rgba(255,255,255,0)" />
+                </linearGradient>
+              </defs>
+              <path
+                d="${this.generateGraphPath()}"
+                fill="none"
+                stroke="${this._graphLineColor}"
+                stroke-width="2"
+                stroke-linejoin="round"
+                stroke-linecap="round"
+              />
+              <path
+                d="${this.generateGraphPath(true)}"
+                fill="url(#gradient)"
+              />
+            </svg>
+          </div>
+        ` : nothing}
         <div class="climate-card-container">
           <div class="card-layout">
             <div class="content-wrapper">
@@ -391,34 +421,6 @@ export class ClimateCard
                 </div>
               </div>
             </div>
-          </div>
-          
-          <div class="climate-card-footer">
-            ${this._graphEntity && this._graphData.length > 0 ? html`
-              <div class="climate-graph">
-                <svg viewBox="0 0 500 ${this._graphHeight}" preserveAspectRatio="none" class="temperature-graph">
-                  <defs>
-                    <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                      <stop offset="0%" stop-color="${this._graphFillColor}" />
-                      <stop offset="50%" stop-color="${this._graphFillColor.replace(/[^,]+(?=\))/, '0.3')}" />
-                      <stop offset="100%" stop-color="rgba(255,255,255,0)" />
-                    </linearGradient>
-                  </defs>
-                  <path
-                    d="${this.generateGraphPath()}"
-                    fill="none"
-                    stroke="${this._graphLineColor}"
-                    stroke-width="2"
-                    stroke-linejoin="round"
-                    stroke-linecap="round"
-                  />
-                  <path
-                    d="${this.generateGraphPath(true)}"
-                    fill="url(#gradient)"
-                  />
-                </svg>
-              </div>
-            ` : nothing}
           </div>
         </div>
       </ha-card>
@@ -620,7 +622,7 @@ export class ClimateCard
           padding: 16px;
           overflow: hidden;
           position: relative;
-          min-height: calc(min(var(--graph-height, 80px), 100px) + 100px); /* Dynamic height based on graph height, limited to 100px */
+          min-height: 100px; /* Fixed minimum height */
           display: flex;
           justify-content: center;
           align-items: center; /* Center vertically */
@@ -644,7 +646,7 @@ export class ClimateCard
           height: 100%;
           box-sizing: border-box;
           position: relative;
-          z-index: 1; /* Above the footer */
+          z-index: 2; /* Above the graph background */
           cursor: pointer; /* Indicate clickable */
         }
         
@@ -673,7 +675,7 @@ export class ClimateCard
           margin-right: 16px;
           flex: 0 0 auto;
           min-width: 80px; /* Ensure minimum width */
-          z-index: 1;
+          z-index: 2;
         }
         
         .inside-temp {
@@ -699,7 +701,7 @@ export class ClimateCard
           flex: 0 0 auto; /* Don't grow or shrink */
           position: absolute;
           right: 40px; /* Position from right */
-          z-index: 2;
+          z-index: 3;
         }
         
         .temperature-controls {
@@ -707,7 +709,7 @@ export class ClimateCard
           padding: 0;
           position: absolute;
           right: 0;
-          z-index: 2;
+          z-index: 3;
         }
         
         .hvac-mode-row, .fan-mode-row {
@@ -804,39 +806,30 @@ export class ClimateCard
           opacity: 0.8;
         }
         
-        .climate-card-footer {
+        /* New dedicated container for the graph background */
+        .graph-background-container {
           position: absolute;
-          bottom: -16px; /* Extend beyond bottom padding */
-          left: -16px; /* Extend beyond padding */
-          right: -16px; /* Extend beyond padding */
-          height: var(--graph-height, 80px); /* Dynamic height based on config */
-          z-index: 0; /* Put behind other elements */
-          overflow: hidden; /* Hide overflow */
-          max-height: 100px; /* Limit height */
+          bottom: 0;
+          left: 0;
+          right: 0;
+          height: var(--graph-height, 80px);
+          width: 100%;
+          z-index: -1; /* Place behind all content */
+          overflow: visible; /* Allow content to overflow */
+          pointer-events: none; /* Allow clicks to pass through */
         }
         
-        .climate-card-footer::before {
+        /* Add a subtle gradient at the bottom */
+        .graph-background-container::after {
           content: "";
           position: absolute;
           bottom: 0;
           left: 0;
           right: 0;
-          height: 30px; /* Taller gradient */
+          height: 30px;
           background: linear-gradient(to top, rgba(255,255,255,0.05), transparent);
           border-radius: 0 0 12px 12px;
           width: 100%;
-        }
-
-        .climate-graph {
-          position: absolute;
-          bottom: -16px; /* Extend beyond bottom padding */
-          left: 0;
-          right: 0;
-          height: var(--graph-height, 80px); /* Dynamic height based on config */
-          overflow: hidden;
-          width: calc(100% + 32px); /* Extend beyond padding */
-          max-height: 100px; /* Limit height */
-          margin-left: -16px; /* Align with left edge */
         }
 
         .temperature-graph {
