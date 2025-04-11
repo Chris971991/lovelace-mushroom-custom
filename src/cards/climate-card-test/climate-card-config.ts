@@ -34,6 +34,7 @@ export type ClimateCardConfig = LovelaceCardConfig &
     outside_temperature_entity?: string;
     inside_temperature_entity?: string;
     show_fan_control?: boolean;
+    show_graph?: boolean;
     graph_entity?: string;
     graph_hours?: number;
     graph_height?: number;
@@ -58,6 +59,7 @@ export const climateCardConfigStruct = assign(
     outside_temperature_entity: optional(string()),
     inside_temperature_entity: optional(string()),
     show_fan_control: optional(boolean()),
+    show_graph: optional(boolean()),
     graph_entity: optional(string()),
     graph_hours: optional(number()),
     graph_height: optional(number()),

@@ -22,6 +22,7 @@ const CLIMATE_LABELS = [
   "outside_temperature_entity",
   "inside_temperature_entity",
   "show_fan_control",
+  "show_graph",
   "graph_entity",
   "graph_hours",
   "graph_height",
@@ -67,6 +68,9 @@ export class ClimateCardEditor
     if (schema.name === "graph_entity") {
       return "Temperature Graph Sensor";
     }
+    if (schema.name === "show_graph") {
+      return "Show Temperature Graph";
+    }
     if (schema.name === "graph_hours") {
       return "Graph History (hours)";
     }
@@ -107,6 +111,7 @@ export class ClimateCardEditor
       { name: "show_temperature_control", selector: { boolean: {} } },
       { name: "collapsible_controls", selector: { boolean: {} } },
       { name: "show_fan_control", selector: { boolean: {} } },
+      { name: "show_graph", selector: { boolean: {} } },
       {
         name: "hvac_modes",
         selector: {

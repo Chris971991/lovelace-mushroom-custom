@@ -95,6 +95,7 @@ export class ClimateCard
   @state() private _outsideTempEntity?: string;
   @state() private _insideTempEntity?: string;
   @state() private _graphEntity?: string;
+  @state() private _showGraph: boolean = true; // Default to showing the graph
   @state() private _graphHours: number = 24; // Default to 24 hours
   @state() private _graphHeight: number = 80; // Default to 80 pixels
   @state() private _graphLineColor: string = "rgba(255,255,255,0.5)"; // Default line color
@@ -153,6 +154,7 @@ export class ClimateCard
     this._outsideTempEntity = config.outside_temperature_entity || "";
     this._insideTempEntity = config.inside_temperature_entity || "";
     this._graphEntity = config.graph_entity || "";
+    this._showGraph = config.show_graph !== false; // Default to true if not specified
     this._graphHours = config.graph_hours || 24; // Default to 24 hours
     this._graphHeight = config.graph_height || 80; // Default to 80 pixels
     this._graphLineColor = config.graph_line_color || "rgba(255,255,255,0.5)"; // Default line color
@@ -377,7 +379,7 @@ export class ClimateCard
         })}
       >
         <!-- Dedicated graph container positioned behind all content -->
-        ${this._graphEntity && this._graphData.length > 0 ? html`
+        ${this._showGraph && this._graphEntity && this._graphData.length > 0 ? html`
           <div class="graph-background-container">
             <svg viewBox="0 0 500 ${this._graphHeight}" preserveAspectRatio="none" class="temperature-graph">
               <defs>
