@@ -431,25 +431,31 @@ export class ClimateCard
           padding: 16px;
           overflow: hidden;
           position: relative;
-          min-height: 120px;
+          min-height: 140px; /* Taller card */
           display: flex;
           justify-content: center;
+          align-items: center; /* Center vertically */
           box-sizing: border-box;
         }
         
         .climate-card-container {
           display: flex;
           flex-direction: column;
+          justify-content: center; /* Center vertically */
           height: 100%;
+          width: 100%;
+          position: relative;
         }
         
         .card-layout {
           display: flex;
           justify-content: center;
           align-items: center;
-          margin-top: 16px;
           width: 100%;
+          height: 100%;
           box-sizing: border-box;
+          position: relative;
+          z-index: 1; /* Above the footer */
         }
         
         .content-wrapper {
@@ -611,9 +617,9 @@ export class ClimateCard
         .climate-card-footer {
           position: absolute;
           bottom: 0;
-          left: 0;
-          right: 0;
-          height: 30px;
+          left: -16px; /* Extend beyond padding */
+          right: -16px; /* Extend beyond padding */
+          height: 50px; /* Taller footer */
           z-index: 0; /* Put behind other elements */
         }
         
@@ -626,6 +632,7 @@ export class ClimateCard
           height: 20px;
           background: linear-gradient(to top, rgba(255,255,255,0.05), transparent);
           border-radius: 0 0 12px 12px;
+          width: 100%;
         }
 
         .climate-graph {
@@ -633,8 +640,10 @@ export class ClimateCard
           bottom: 0;
           left: 0;
           right: 0;
-          height: 30px;
+          height: 50px; /* Taller graph */
           overflow: hidden;
+          width: calc(100% + 32px); /* Extend beyond padding */
+          margin-left: -16px; /* Align with left edge */
         }
 
         .temperature-graph {
