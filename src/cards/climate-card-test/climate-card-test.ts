@@ -62,8 +62,8 @@ const CONTROLS_ICONS: Record<ClimateCardControl, string> = {
 
 registerCustomCard({
   type: CLIMATE_CARD_NAME,
-  name: "Modern Climate Card",
-  description: "Modern climate card with sleek design",
+  name: "✨ Modern Climate Card",
+  description: "Elegant climate card with temperature graph, indoor/outdoor sensors, and animated controls",
 });
 
 @customElement(CLIMATE_CARD_NAME)
@@ -86,9 +86,27 @@ export class ClimateCardTest
     const climates = entities.filter((e) =>
       CLIMATE_ENTITY_DOMAINS.includes(e.split(".")[0])
     );
+    
+    // Find temperature sensors for better preview
+    const tempSensors = entities.filter((e) =>
+      e.split(".")[0] === "sensor" &&
+      hass.states[e].attributes.unit_of_measurement === "°C"
+    );
+    
+    // Create a more visually appealing stub config
     return {
       type: `custom:${CLIMATE_CARD_NAME}`,
       entity: climates[0],
+      name: "Living Room",
+      icon: "mdi:thermostat",
+      show_temperature_control: true,
+      inside_temperature_entity: tempSensors[0] || "",
+      outside_temperature_entity: tempSensors[1] || "",
+      show_graph: true,
+      graph_entity: tempSensors[0] || "",
+      graph_height: 80,
+      graph_line_color: "rgba(255,255,255,0.5)",
+      graph_fill_color: "rgba(255,255,255,0.2)",
     };
   }
 
@@ -350,7 +368,21 @@ export class ClimateCardTest
     return null;
   }
 
+  // Check if we're in the card picker preview
+  private _isPreview(): boolean {
+    // More reliable detection of preview mode
+    return document.body.querySelector("home-assistant") === null ||
+           !this.hass ||
+           !this._config?.entity ||
+           !this._stateObj;
+  }
+
   protected render() {
+    // If we're in the card picker preview, show a simplified preview
+    if (this._isPreview()) {
+      return this.renderCardPickerPreview();
+    }
+    
     if (!this.hass || !this._config || !this._config.entity) {
       return nothing;
     }
@@ -458,6 +490,75 @@ export class ClimateCardTest
               </div>
             </div>
           </div>
+        </div>
+      </ha-card>
+    `;
+  }
+  // Special simplified preview just for the card picker
+  private renderCardPickerPreview(): TemplateResult {
+    return html`
+      <style>
+        /* Scoped styles for preview only */
+        .preview-card {
+          background: linear-gradient(180deg, #304f72 0%, #455f7c 100%);
+          color: white;
+          padding: 0.8em;
+          border-radius: 12px;
+          box-sizing: border-box;
+          width: 100%;
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+        }
+        .preview-temp {
+          font-size: 1.5em;
+          font-weight: 300;
+          line-height: 1;
+        }
+        .preview-name {
+          font-size: 0.7em;
+          opacity: 0.8;
+        }
+        .preview-icon {
+          --mdc-icon-size: 1em;
+          color: #ff6b6b;
+        }
+        .preview-graph {
+          margin-top: auto;
+          height: 30%;
+          width: 100%;
+        }
+      </style>
+      <ha-card>
+        <div class="preview-card">
+          <!-- Temperature display -->
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div class="preview-temp">22°</div>
+              <div class="preview-name">Living Room</div>
+            </div>
+            <ha-icon class="preview-icon" icon="mdi:fire"></ha-icon>
+          </div>
+          
+          <!-- Graph visualization -->
+          <svg class="preview-graph" viewBox="0 0 100 40" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="preview-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="rgba(255,255,255,0.3)" />
+                <stop offset="100%" stop-color="rgba(255,255,255,0)" />
+              </linearGradient>
+            </defs>
+            <path
+              d="M0,30 C10,25 20,15 30,20 C40,25 50,10 60,15 C70,20 80,5 90,10 L100,15 L100,40 L0,40 Z"
+              fill="url(#preview-gradient)"
+            />
+            <path
+              d="M0,30 C10,25 20,15 30,20 C40,25 50,10 60,15 C70,20 80,5 90,10 L100,15"
+              fill="none"
+              stroke="rgba(255,255,255,0.5)"
+              stroke-width="1.5"
+            />
+          </svg>
         </div>
       </ha-card>
     `;
@@ -741,15 +842,16 @@ export class ClimateCardTest
       css`
         ha-card {
           color: white;
-          padding: 16px;
+          padding: 1em;
           overflow: hidden;
           position: relative;
-          min-height: 100px; /* Fixed minimum height */
+          min-height: 6em; /* Relative minimum height */
           border-radius: var(--card-border-radius, 12px);
           display: flex;
           justify-content: center;
           align-items: center; /* Center vertically */
           box-sizing: border-box;
+          font-size: calc(14px + 0.1vw); /* Responsive base font size */
         }
         
         .climate-card-container {
@@ -795,14 +897,14 @@ export class ClimateCardTest
           display: flex;
           flex-direction: column;
           align-items: flex-start;
-          margin-right: 16px;
+          margin-right: 1em;
           flex: 0 0 auto;
-          min-width: 80px; /* Ensure minimum width */
+          min-width: 5em; /* Relative minimum width */
           z-index: 2;
         }
         
         .inside-temp {
-          font-size: 2.5em;
+          font-size: 2.2em;
           font-weight: 300;
           line-height: 1;
         }
@@ -823,7 +925,7 @@ export class ClimateCardTest
           align-items: flex-end;
           flex: 0 0 auto; /* Don't grow or shrink */
           position: absolute;
-          right: 40px; /* Position from right */
+          right: 2.5em; /* Relative position from right */
           z-index: 3;
         }
         
@@ -838,13 +940,13 @@ export class ClimateCardTest
         .hvac-mode-row, .fan-mode-row {
           display: flex;
           justify-content: flex-end;
-          margin-right: -4px; /* Negative margin to move buttons to the right */
+          margin-right: -0.25em; /* Negative margin to move buttons to the right */
         }
         
         .temperature-controls-row {
           display: flex;
           justify-content: center;
-          margin-top: 16px;
+          margin-top: 1em;
           display: none; /* Hide for now as per the image */
         }
         
@@ -857,8 +959,8 @@ export class ClimateCardTest
         .mode-button {
           background: #444;
           border: none;
-          width: 26px;
-          height: 26px;
+          width: 1.6em;
+          height: 1.6em;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -868,7 +970,7 @@ export class ClimateCardTest
         }
         
         .mode-button ha-icon {
-          --mdc-icon-size: 18px;
+          --mdc-icon-size: 1.1em;
         }
         
         .mode-button.active ha-icon {
@@ -896,8 +998,8 @@ export class ClimateCardTest
         .fan-button {
           background: #444;
           border: none;
-          width: 26px;
-          height: 26px;
+          width: 1.6em;
+          height: 1.6em;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -907,7 +1009,7 @@ export class ClimateCardTest
         }
         
         .fan-button ha-icon {
-          --mdc-icon-size: 18px;
+          --mdc-icon-size: 1.1em;
         }
 
         .fan-button:first-child {
@@ -921,7 +1023,7 @@ export class ClimateCardTest
         }
         
         .temperature-column {
-          margin-left: 16px;
+          margin-left: 1em;
         }
         
         /* Temperature controls are now handled by the component */
@@ -929,8 +1031,8 @@ export class ClimateCardTest
         .action-badge {
           display: flex;
           align-items: center;
-          gap: 4px;
-          margin-top: 8px;
+          gap: 0.25em;
+          margin-top: 0.5em;
           font-size: 0.8em;
           opacity: 0.8;
         }
@@ -941,7 +1043,7 @@ export class ClimateCardTest
           bottom: 0;
           left: 0;
           right: 0;
-          height: var(--graph-height, 80px);
+          height: var(--graph-height, 5em);
           width: 100%;
           z-index: -1; /* Place behind all content */
           overflow: visible; /* Allow content to overflow */

@@ -202,20 +202,22 @@ export class ClimateTemperatureControl extends LitElement {
         justify-content: center;
         padding: 0;
         margin: 0;
+        font-size: inherit; /* Inherit font size from parent */
       }
       
+      /* Fixed size for all controls */
       .temp-controls {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        border-radius: 16px;
+        display: grid;
+        grid-template-rows: 1fr 1fr 1fr;
+        width: 2.4em;
+        height: 7.2em; /* Exactly 3x the width */
         padding: 0;
-        width: 40px;
+        margin: 0;
       }
       
       .dual-temp-controls {
         display: flex;
-        gap: 16px;
+        gap: 1em;
       }
       
       .heat {
@@ -228,16 +230,24 @@ export class ClimateTemperatureControl extends LitElement {
         --text-color: rgb(var(--rgb-state-climate-cool));
       }
       
-      .temp-up, .temp-down {
-        background: #444;
-        border: none;
-        width: 38px;
-        height: 3rem;
+      /* Base styles for all controls */
+      .temp-up, .temp-down, .current-temp {
+        width: 100%;
+        height: 100%;
         display: flex;
         align-items: center;
         justify-content: center;
-        cursor: pointer;
+        background: #444;
         color: white;
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      
+      /* Button specific styles */
+      .temp-up, .temp-down {
+        border: none;
+        cursor: pointer;
       }
       
       .temp-up {
@@ -248,6 +258,12 @@ export class ClimateTemperatureControl extends LitElement {
         border-radius: 0 0 50% 50%;
       }
       
+      /* Icon sizing */
+      .temp-up ha-icon, .temp-down ha-icon {
+        --mdc-icon-size: 1.2em;
+      }
+      
+      /* Color variations */
       .heat .temp-up, .heat .temp-down, .heat .current-temp {
         background-color: var(--button-bg, #444);
         color: var(--text-color, white);
@@ -258,14 +274,11 @@ export class ClimateTemperatureControl extends LitElement {
         color: var(--text-color, white);
       }
       
+      /* Temperature display */
       .current-temp {
-        background: #444;
-        width: 38px;
-        height: 28px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.1em;
+        font-size: 1em;
+        font-weight: 500;
+        line-height: 1;
       }
       
       button[disabled] {
