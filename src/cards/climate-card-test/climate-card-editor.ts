@@ -10,8 +10,8 @@ import { GENERIC_LABELS } from "../../utils/form/generic-fields";
 import { HaFormSchema } from "../../utils/form/ha-form";
 import { loadHaComponents } from "../../utils/loader";
 import {
-  ClimateCardConfig,
-  climateCardConfigStruct,
+  ClimateCardTestConfig,
+  climateCardTestConfigStruct,
   HVAC_MODES,
 } from "./climate-card-config";
 import { CLIMATE_CARD_EDITOR_NAME, CLIMATE_ENTITY_DOMAINS } from "./const";
@@ -35,19 +35,18 @@ const CLIMATE_LABELS = [
 ] as const;
 
 @customElement(CLIMATE_CARD_EDITOR_NAME)
-export class ClimateCardEditor
+export class ClimateCardTestEditor
   extends MushroomBaseElement
   implements LovelaceCardEditor
 {
-  @state() private _config?: ClimateCardConfig;
+  @state() private _config?: ClimateCardTestConfig;
 
   connectedCallback() {
     super.connectedCallback();
     void loadHaComponents();
   }
-
-  public setConfig(config: ClimateCardConfig): void {
-    assert(config, climateCardConfigStruct);
+  public setConfig(config: ClimateCardTestConfig): void {
+    assert(config, climateCardTestConfigStruct);
     this._config = config;
   }
 

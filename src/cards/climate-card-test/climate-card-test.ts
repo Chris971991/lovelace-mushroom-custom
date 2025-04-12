@@ -35,7 +35,7 @@ import { MushroomBaseCard } from "../../utils/base-card";
 import { cardStyle } from "../../utils/card-styles";
 import { registerCustomCard } from "../../utils/custom-cards";
 import { computeEntityPicture } from "../../utils/info";
-import { ClimateCardConfig } from "./climate-card-config";
+import { ClimateCardTestConfig } from "./climate-card-config";
 import {
   CLIMATE_CARD_EDITOR_NAME,
   CLIMATE_CARD_NAME,
@@ -67,20 +67,21 @@ registerCustomCard({
 });
 
 @customElement(CLIMATE_CARD_NAME)
-export class ClimateCard
-  extends MushroomBaseCard<ClimateCardConfig, ClimateEntity>
+export class ClimateCardTest
+  extends MushroomBaseCard<ClimateCardTestConfig, ClimateEntity>
   implements LovelaceCard
 {
   public static async getConfigElement(): Promise<LovelaceCardEditor> {
     await import("./climate-card-editor");
-    return document.createElement(
+    const element = document.createElement(
       CLIMATE_CARD_EDITOR_NAME
     ) as LovelaceCardEditor;
+    return element;
   }
 
   public static async getStubConfig(
     hass: HomeAssistant
-  ): Promise<ClimateCardConfig> {
+  ): Promise<ClimateCardTestConfig> {
     const entities = Object.keys(hass.states);
     const climates = entities.filter((e) =>
       CLIMATE_ENTITY_DOMAINS.includes(e.split(".")[0])
@@ -141,7 +142,7 @@ export class ClimateCard
     this._activeControl = ctrl;
   }
 
-  setConfig(config: ClimateCardConfig): void {
+  setConfig(config: ClimateCardTestConfig): void {
     super.setConfig({
       tap_action: {
         action: "toggle",

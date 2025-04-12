@@ -24,7 +24,7 @@ export const HVAC_MODES: HvacMode[] = [
   "off",
 ];
 
-export type ClimateCardConfig = LovelaceCardConfig &
+export type ClimateCardTestConfig = LovelaceCardConfig &
   EntitySharedConfig &
   AppearanceSharedConfig &
   ActionsSharedConfig & {
@@ -46,7 +46,7 @@ export type ClimateCardConfig = LovelaceCardConfig &
     graph_style?: "smooth" | "sharp";
   };
 
-export const climateCardConfigStruct = assign(
+export const climateCardTestConfigStruct = assign(
   lovelaceCardConfigStruct,
   assign(
     entitySharedConfigStruct,
