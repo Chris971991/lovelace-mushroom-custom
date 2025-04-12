@@ -116,6 +116,7 @@ export class ClimateCardTest
   @state() private _graphEntity?: string;
   @state() private _showGraph: boolean = true; // Default to showing the graph
   @state() private _showFanControl: boolean = true; // Default to showing fan controls
+  @state() private _showTemperatureControl: boolean = true; // Default to showing temperature controls
   @state() private _graphHours: number = 24; // Default to 24 hours
   @state() private _graphHeight: number = 80; // Default to 80 pixels
   @state() private _graphLineColor: string = "rgba(255,255,255,0.5)"; // Default line color
@@ -177,6 +178,7 @@ export class ClimateCardTest
     this._graphEntity = config.graph_entity || "";
     this._showGraph = config.show_graph !== false; // Default to true if not specified
     this._showFanControl = config.show_fan_control !== false; // Default to true if not specified
+    this._showTemperatureControl = config.show_temperature_control !== false; // Default to true if not specified
     this._graphHours = config.graph_hours || 24; // Default to 24 hours
     this._graphHeight = config.graph_height || 80; // Default to 80 pixels
     this._graphLineColor = config.graph_line_color || "rgba(255,255,255,0.5)"; // Default line color
@@ -476,7 +478,10 @@ export class ClimateCardTest
               
               <div class="controls-wrapper">
                 <!-- Center column: HVAC and Fan controls -->
-                <div class="control-buttons">
+                <div class="control-buttons ${!this._showTemperatureControl ? 'expanded' : ''}"
+                     style=${styleMap({
+                       right: this._showTemperatureControl ? '2.5em' : '0.5em'
+                     })}>
                   <div class="hvac-mode-row">
                     ${this.renderHvacModeControls(stateObj)}
                   </div>
@@ -488,9 +493,11 @@ export class ClimateCardTest
                 </div>
                 
                 <!-- Right column: Temperature controls -->
-                <div class="temperature-controls">
-                  ${this.renderTempControls(stateObj)}
-                </div>
+                ${this._showTemperatureControl ? html`
+                  <div class="temperature-controls">
+                    ${this.renderTempControls(stateObj)}
+                  </div>
+                ` : nothing}
               </div>
             </div>
           </div>
@@ -711,9 +718,9 @@ export class ClimateCardTest
       fan_mode: mode
     });
   }
-
-  private renderTempControls(entity: ClimateEntity): TemplateResult | typeof nothing {
-    if (!isTemperatureControlVisible(entity)) return nothing;
+private renderTempControls(entity: ClimateEntity): TemplateResult | typeof nothing {
+  if (!isTemperatureControlVisible(entity) || !this._showTemperatureControl) return nothing;
+  
     
     return html`
       <chrum-climate-temperature-control
@@ -934,6 +941,7 @@ export class ClimateCardTest
           display: flex;
           flex-direction: column;
           justify-content: center; /* Center vertically when only one row */
+          transition: right 0.3s ease;
           height: 100%;
         }
         
@@ -975,20 +983,44 @@ export class ClimateCardTest
           cursor: pointer;
           color: white;
           font-size: 0.8em;
+          transition: width 0.3s, height 0.3s;
+        }
+        
+        .expanded .mode-button {
+          width: 2em;
+          height: 2em;
         }
         
         .mode-button ha-icon {
           --mdc-icon-size: 1.1em;
+          transition: --mdc-icon-size 0.3s;
+        }
+        
+        .expanded .mode-button ha-icon {
+          --mdc-icon-size: 1.5em;
         }
         
         .mode-button.active ha-icon {
           animation: var(--icon-animation, none);
         }
+.mode-button:first-child {
+  border-top-left-radius: 50%;
+  border-bottom-left-radius: 50%;
+}
 
-        .mode-button:first-child {
-          border-top-left-radius: 50%;
-          border-bottom-left-radius: 50%;
-        }
+/* Apply rounded corners to the last button when temperature controls are hidden */
+.mode-button:last-child {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  transition: border-radius 0.3s ease;
+}
+
+/* Only apply rounded corners when temperature controls are hidden */
+.expanded .mode-button:last-child {
+  border-top-right-radius: 50%;
+  border-bottom-right-radius: 50%;
+}
+
         
         .mode-button.active {
           background: var(--button-bg, rgba(var(--rgb-state-climate-heat), 0.2));
@@ -1014,15 +1046,39 @@ export class ClimateCardTest
           cursor: pointer;
           color: white;
           font-size: 0.7em;
+          transition: width 0.3s, height 0.3s;
+        }
+        
+        .expanded .fan-button {
+          width: 2em;
+          height: 2em;
         }
         
         .fan-button ha-icon {
           --mdc-icon-size: 1.1em;
+          transition: --mdc-icon-size 0.3s;
+        }
+        
+        .expanded .fan-button ha-icon {
+          --mdc-icon-size: 1.5em;
         }
 
         .fan-button:first-child {
           border-top-left-radius: 50%;
           border-bottom-left-radius: 50%;
+        }
+        
+        /* Apply rounded corners to the last button when temperature controls are hidden */
+        .fan-button:last-child {
+          border-top-right-radius: 0;
+          border-bottom-right-radius: 0;
+          transition: border-radius 0.3s ease;
+        }
+        
+        /* Only apply rounded corners when temperature controls are hidden */
+        .expanded .fan-button:last-child {
+          border-top-right-radius: 50%;
+          border-bottom-right-radius: 50%;
         }
         
         .fan-button.active {
