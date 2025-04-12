@@ -18,11 +18,9 @@ import {
 import { CLIMATE_CARD_EDITOR_NAME, CLIMATE_ENTITY_DOMAINS } from "./const";
 
 const CLIMATE_LABELS = [
-  "hvac_modes", 
-  "show_temperature_control", 
-  "outside_temperature_entity", 
-  "inside_temperature_entity",
-  "show_fan_control"
+  "hvac_modes",
+  "show_temperature_control",
+  "collapsible_controls"
 ] as const;
 
 @customElement(CLIMATE_CARD_EDITOR_NAME)
@@ -51,12 +49,6 @@ export class ClimateCardEditor
     if (CLIMATE_LABELS.includes(schema.name as any)) {
       return customLocalize(`editor.card.climate.${schema.name}`);
     }
-    if (schema.name === "inside_temperature_entity") {
-      return "Inside Temperature Sensor";
-    }
-    if (schema.name === "outside_temperature_entity") {
-      return "Outside Temperature Sensor";
-    }
     return this.hass!.localize(
       `ui.panel.lovelace.editor.card.generic.${schema.name}`
     );
@@ -74,7 +66,6 @@ export class ClimateCardEditor
       ...APPEARANCE_FORM_SCHEMA,
       { name: "show_temperature_control", selector: { boolean: {} } },
       { name: "collapsible_controls", selector: { boolean: {} } },
-      { name: "show_fan_control", selector: { boolean: {} } },
       {
         name: "hvac_modes",
         selector: {
@@ -90,8 +81,6 @@ export class ClimateCardEditor
           },
         },
       },
-      { name: "inside_temperature_entity", selector: { entity: { domain: ["sensor"] } } },
-      { name: "outside_temperature_entity", selector: { entity: { domain: ["sensor"] } } },
       ...computeActionsFormSchema(),
     ];
 
