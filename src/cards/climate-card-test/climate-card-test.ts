@@ -478,9 +478,9 @@ export class ClimateCardTest
               
               <div class="controls-wrapper">
                 <!-- Center column: HVAC and Fan controls -->
-                <div class="control-buttons ${!this._showTemperatureControl ? 'expanded' : ''}"
+                <div class="control-buttons ${(!this._showTemperatureControl || (stateObj.state === "off" && !this._supportsTemperatureControlWhenOff(stateObj))) ? 'expanded' : ''}"
                      style=${styleMap({
-                       right: this._showTemperatureControl ? '2.5em' : '0.5em'
+                       right: (this._showTemperatureControl && (stateObj.state !== "off" || this._supportsTemperatureControlWhenOff(stateObj))) ? '2.5em' : '0.5em'
                      })}>
                   <div class="hvac-mode-row">
                     ${this.renderHvacModeControls(stateObj)}
@@ -493,9 +493,13 @@ export class ClimateCardTest
                 </div>
                 
                 <!-- Right column: Temperature controls -->
-                ${this._showTemperatureControl ? html`
+                ${(this._showTemperatureControl && (stateObj.state !== "off" || this._supportsTemperatureControlWhenOff(stateObj))) ? html`
                   <div class="temperature-controls">
-                    ${this.renderTempControls(stateObj)}
+                    <chrum-climate-temperature-control
+                      .hass=${this.hass}
+                      .entity=${stateObj}
+                      .fill=${true}
+                    ></chrum-climate-temperature-control>
                   </div>
                 ` : nothing}
               </div>
@@ -718,18 +722,28 @@ export class ClimateCardTest
       fan_mode: mode
     });
   }
-private renderTempControls(entity: ClimateEntity): TemplateResult | typeof nothing {
-  if (!isTemperatureControlVisible(entity) || !this._showTemperatureControl) return nothing;
   
+  /**
+   * Determines if the entity supports temperature control when it's off
+   * This is a heuristic based on the entity's attributes when it's off
+   */
+  private _supportsTemperatureControlWhenOff(entity: ClimateEntity): boolean {
+    // If the entity is not off, we can't determine this
+    if (entity.state !== "off") return true;
     
-    return html`
-      <chrum-climate-temperature-control
-        .hass=${this.hass}
-        .entity=${entity}
-        .fill=${true}
-      ></chrum-climate-temperature-control>
-    `;
+    // If temperature is null or undefined when off, it likely doesn't support control when off
+    if (entity.attributes.temperature === null || entity.attributes.temperature === undefined) {
+      // Check if target_temp_low and target_temp_high are also not available
+      if ((entity.attributes.target_temp_low === null || entity.attributes.target_temp_low === undefined) &&
+          (entity.attributes.target_temp_high === null || entity.attributes.target_temp_high === undefined)) {
+        return false;
+      }
+    }
+    
+    // Otherwise, it likely supports temperature control when off
+    return true;
   }
+  
   
   private _adjustTemperature(amount: number): void {
     const entity = this._stateObj!;
