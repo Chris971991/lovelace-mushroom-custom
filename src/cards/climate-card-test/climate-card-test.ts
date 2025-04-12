@@ -115,6 +115,7 @@ export class ClimateCardTest
   @state() private _insideTempEntity?: string;
   @state() private _graphEntity?: string;
   @state() private _showGraph: boolean = true; // Default to showing the graph
+  @state() private _showFanControl: boolean = true; // Default to showing fan controls
   @state() private _graphHours: number = 24; // Default to 24 hours
   @state() private _graphHeight: number = 80; // Default to 80 pixels
   @state() private _graphLineColor: string = "rgba(255,255,255,0.5)"; // Default line color
@@ -175,6 +176,7 @@ export class ClimateCardTest
     this._insideTempEntity = config.inside_temperature_entity || "";
     this._graphEntity = config.graph_entity || "";
     this._showGraph = config.show_graph !== false; // Default to true if not specified
+    this._showFanControl = config.show_fan_control !== false; // Default to true if not specified
     this._graphHours = config.graph_hours || 24; // Default to 24 hours
     this._graphHeight = config.graph_height || 80; // Default to 80 pixels
     this._graphLineColor = config.graph_line_color || "rgba(255,255,255,0.5)"; // Default line color
@@ -478,9 +480,11 @@ export class ClimateCardTest
                   <div class="hvac-mode-row">
                     ${this.renderHvacModeControls(stateObj)}
                   </div>
-                  <div class="fan-mode-row">
-                    ${this.renderFanControls(stateObj)}
-                  </div>
+                  ${this._showFanControl ? html`
+                    <div class="fan-mode-row">
+                      ${this.renderFanControls(stateObj)}
+                    </div>
+                  ` : nothing}
                 </div>
                 
                 <!-- Right column: Temperature controls -->
@@ -927,6 +931,10 @@ export class ClimateCardTest
           position: absolute;
           right: 2.5em; /* Relative position from right */
           z-index: 3;
+          display: flex;
+          flex-direction: column;
+          justify-content: center; /* Center vertically when only one row */
+          height: 100%;
         }
         
         .temperature-controls {
