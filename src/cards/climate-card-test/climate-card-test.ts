@@ -975,8 +975,8 @@ private renderTempControls(entity: ClimateEntity): TemplateResult | typeof nothi
         .mode-button {
           background: #444;
           border: none;
-          width: 1.6em;
-          height: 1.6em;
+          width: 1.8em;
+          height: 1.8em;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -984,11 +984,14 @@ private renderTempControls(entity: ClimateEntity): TemplateResult | typeof nothi
           color: white;
           font-size: 0.8em;
           transition: width 0.3s, height 0.3s;
+          padding: 0.3em;
+          box-sizing: border-box;
         }
         
         .expanded .mode-button {
-          width: 2em;
-          height: 2em;
+          width: 2.2em;
+          height: 2.2em;
+          padding: 0.4em;
         }
         
         .mode-button ha-icon {
@@ -1038,8 +1041,8 @@ private renderTempControls(entity: ClimateEntity): TemplateResult | typeof nothi
         .fan-button {
           background: #444;
           border: none;
-          width: 1.6em;
-          height: 1.6em;
+          width: 1.8em;
+          height: 1.8em;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -1047,11 +1050,14 @@ private renderTempControls(entity: ClimateEntity): TemplateResult | typeof nothi
           color: white;
           font-size: 0.7em;
           transition: width 0.3s, height 0.3s;
+          padding: 0.3em;
+          box-sizing: border-box;
         }
         
         .expanded .fan-button {
-          width: 2em;
-          height: 2em;
+          width: 2.2em;
+          height: 2.2em;
+          padding: 0.4em;
         }
         
         .fan-button ha-icon {
